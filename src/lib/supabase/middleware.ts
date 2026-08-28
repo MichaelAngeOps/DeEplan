@@ -7,8 +7,14 @@ import type { Database } from "@/types/supabase";
  * Rafraîchit la session Supabase à chaque requête et propage les cookies
  * mis à jour sur la réponse. Renvoie `{ response, user, error }`.
  *
- * IMPORTANT : ne rien exécuter entre `createServerClient` et `getUser()`
- * (risque de déconnexions aléatoires — cf. docs @supabase/ssr).
+ * Vérification du JWT **en local** via `getClaims()` (clés asymétriques ES256
+ * + JWKS mis en cache) : évite un appel `/auth/v1/user` à chaque navigation
+ * (endpoint soumis à un rate limit strict). `getClaims()` rafraîchit le jeton
+ * via `getSession()` s'il est proche de l'expiration → `setAll` écrit alors les
+ * nouveaux cookies. Compromis assumé : un compte supprimé/banni côté serveur
+ * garde son accès jusqu'à l'expiration du jeton (≤ 1 h).
+ *
+ * IMPORTANT : ne rien exécuter entre `createServerClient` et `getClaims()`.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,10 +40,9 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getClaims();
+  const sub = data?.claims?.sub;
+  const user = typeof sub === "string" ? { id: sub } : null;
 
   return { response, user, error };
 }

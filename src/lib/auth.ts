@@ -1,8 +1,13 @@
 // Serveur uniquement (dépend de next/headers via @/lib/supabase/server).
 import { cache } from "react";
-import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type { StatutRole, Utilisateur } from "@/types/domain";
+
+/** Identité minimale de l'utilisateur courant (extraite du JWT vérifié). */
+export interface UtilisateurAuth {
+  id: string;
+  email: string | null;
+}
 
 /** Accès applicatif de l'utilisateur courant. */
 export interface Acces {
@@ -13,20 +18,17 @@ export interface Acces {
   star: { statut: StatutRole; sectionIds: string[] } | null;
 }
 
-/** Utilisateur `auth` courant (session vérifiée côté serveur), ou `null`. */
-export const getUser = cache(async (): Promise<User | null> => {
+/**
+ * Utilisateur `auth` courant, ou `null`. Vérification **locale** du JWT via
+ * `getClaims()` (ES256 + JWKS) — pas d'appel `/auth/v1/user` par rendu (le
+ * middleware a déjà validé + rafraîchi la session pour cette requête).
+ */
+export const getUser = cache(async (): Promise<UtilisateurAuth | null> => {
   const supabase = await createClient();
-
-  // Une erreur transitoire (429 rate limit, 5xx) ne doit pas faire passer un
-  // utilisateur connecté pour déconnecté → une nouvelle tentative après pause.
-  for (let essai = 0; essai < 2; essai++) {
-    const { data, error } = await supabase.auth.getUser();
-    if (!error) return data.user;
-    const transitoire = error.status === 429 || (error.status ?? 0) >= 500;
-    if (!transitoire || essai === 1) return null;
-    await new Promise((r) => setTimeout(r, 600));
-  }
-  return null;
+  const { data } = await supabase.auth.getClaims();
+  const c = data?.claims;
+  if (!c || typeof c.sub !== "string") return null;
+  return { id: c.sub, email: typeof c.email === "string" ? c.email : null };
 });
 
 /** Ligne `public.utilisateurs` de l'utilisateur courant, ou `null`. */
