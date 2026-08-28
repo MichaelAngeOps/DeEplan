@@ -24,7 +24,11 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("suite", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+    const redirect = NextResponse.redirect(url);
+    // Reporter les cookies de session rafraîchis par `updateSession` :
+    // sans ça, un refresh + redirection perd la nouvelle session.
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
   }
 
   return response;
