@@ -1,36 +1,38 @@
 import Link from "next/link";
+import { LogoMark } from "@/components/Logo";
 
-export default function Home() {
+export default function AccueilPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      <div className="text-center">
-        <h1 className="font-display text-dmd font-semibold text-ink">DeEplan</h1>
-        <p className="mt-2 text-caption text-ink-48">
-          Squelette Next.js 15 · TypeScript · Tailwind v3 — en cours de construction.
+    <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-5 py-10 text-ink">
+      <div className="w-full max-w-[420px] text-center">
+        <LogoMark width={48} height={48} className="mx-auto mb-5 text-ink" />
+        <h1 className="font-display text-[26px] font-semibold tracking-[-0.4px] text-ink">
+          DeEplan
+        </h1>
+        <p className="mt-2 text-caption font-medium text-accent">
+          Le planning d&apos;équipe, simplifié.
         </p>
-      </div>
+        <p className="mt-5 text-caption leading-relaxed text-ink-80">
+          Un responsable planifie les shifts de son équipe chaque mois, poste par
+          poste. Les stars soumettent leurs disponibilités et consultent leur
+          planning en temps réel.
+        </p>
 
-      {/* Liens temporaires vers les pages de vérification (Lot 0). */}
-      <nav className="flex flex-wrap justify-center gap-3">
-        <Link
-          href="/design"
-          className="rounded-pill border border-hairline bg-pearl px-4 py-2 text-caption-strong text-ink-80"
-        >
-          Design system (tokens)
-        </Link>
-        <Link
-          href="/design/composants"
-          className="rounded-pill border border-hairline bg-pearl px-4 py-2 text-caption-strong text-ink-80"
-        >
-          Composants UI
-        </Link>
-        <Link
-          href="/design/layouts"
-          className="rounded-pill border border-hairline bg-pearl px-4 py-2 text-caption-strong text-ink-80"
-        >
-          Layouts
-        </Link>
-      </nav>
+        <div className="mt-8 flex flex-col gap-3">
+          <Link
+            href="/login"
+            className="w-full rounded-pill bg-accent px-5 py-3 text-[14px] font-semibold text-white transition duration-fast ease-smooth active:scale-press"
+          >
+            Se connecter
+          </Link>
+          <Link
+            href="/inscription"
+            className="w-full rounded-pill border border-hairline bg-pearl px-5 py-3 text-[14px] font-semibold text-ink-80 transition duration-fast ease-smooth active:scale-press"
+          >
+            Créer un compte
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
