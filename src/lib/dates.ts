@@ -52,6 +52,12 @@ export function aujourdhuiISO(): string {
   return iso(d.getFullYear(), d.getMonth() + 1, d.getDate());
 }
 
+/** `"2026-08-14"` → `"14/08"`. */
+export function dateCourteFr(dateISO: string): string {
+  const [, m, j] = dateISO.split("-");
+  return `${j}/${m}`;
+}
+
 /** Jour de semaine d'une date ISO : 0 = dimanche … 6 = samedi (calcul local, sans fuseau). */
 export function jourSemaine(dateISO: string): number {
   const [a, m, j] = dateISO.split("-").map(Number);
