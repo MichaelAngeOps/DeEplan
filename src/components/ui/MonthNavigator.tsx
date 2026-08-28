@@ -8,6 +8,8 @@ export interface MonthNavigatorProps {
   label: string;
   onPrev: () => void;
   onNext: () => void;
+  prevDisabled?: boolean;
+  nextDisabled?: boolean;
   size?: Size;
   className?: string;
 }
@@ -16,6 +18,8 @@ export function MonthNavigator({
   label,
   onPrev,
   onNext,
+  prevDisabled,
+  nextDisabled,
   size = "md",
   className,
 }: MonthNavigatorProps) {
@@ -27,6 +31,7 @@ export function MonthNavigator({
         size={size}
         label="Mois précédent"
         onClick={onPrev}
+        disabled={prevDisabled}
         icon={<ChevronLeft size={iconSize} />}
       />
       <span
@@ -42,6 +47,7 @@ export function MonthNavigator({
         size={size}
         label="Mois suivant"
         onClick={onNext}
+        disabled={nextDisabled}
         icon={<ChevronRight size={iconSize} />}
       />
     </div>
