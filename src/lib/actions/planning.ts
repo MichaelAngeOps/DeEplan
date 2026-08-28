@@ -164,6 +164,35 @@ export async function assignerShift(
   return { ok: true };
 }
 
+/** Statut manuel d'un shift par le responsable (dashboard « Stars de service »). */
+export async function definirStatutShift(
+  shiftId: string,
+  statut: "de_service" | "a_servi" | "na_pas_servi",
+): Promise<ActionResultat> {
+  const g = await garde();
+  if (!g.ok) return g;
+
+  const supabase = await createClient();
+
+  const { data: shift } = await supabase
+    .from("plannings")
+    .select("id, postes!inner(sections!inner(departement_id))")
+    .eq("id", shiftId)
+    .eq("postes.sections.departement_id", g.departementId)
+    .maybeSingle();
+  if (!shift) return { ok: false, erreur: "Shift introuvable." };
+
+  const { error } = await supabase
+    .from("plannings")
+    .update({ statut })
+    .eq("id", shiftId);
+  if (error) return { ok: false, erreur: "Mise à jour du statut impossible." };
+
+  revalidatePath("/responsable/dashboard");
+  revalidatePath(PATH);
+  return { ok: true };
+}
+
 export async function retirerShift(shiftId: string): Promise<ActionResultat> {
   const g = await garde();
   if (!g.ok) return g;

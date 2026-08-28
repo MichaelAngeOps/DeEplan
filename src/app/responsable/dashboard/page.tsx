@@ -1,20 +1,63 @@
-import { Card } from "@/components/ui";
+import { redirect } from "next/navigation";
+import { Banner, Card } from "@/components/ui";
+import { StarsDeService } from "@/components/dashboard/StarsDeService";
+import { getAcces } from "@/lib/auth";
+import { getShiftsDuJour } from "@/lib/data/dashboard";
+import { aujourdhuiISO } from "@/lib/dates";
 
-/** Placeholder — le vrai tableau de bord arrive au Lot 5. */
-export default function DashboardPage() {
+export const metadata = { title: "Tableau de bord — DeEplan" };
+
+export default async function DashboardPage() {
+  const acces = await getAcces();
+  if (!acces?.estResponsable || !acces.departementId) redirect("/login");
+
+  let shifts: Awaited<ReturnType<typeof getShiftsDuJour>> | null = null;
+  try {
+    shifts = await getShiftsDuJour(acces.departementId, aujourdhuiISO());
+  } catch {
+    shifts = null;
+  }
+
+  const dateLisible = new Date().toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <>
       <h1 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.4px] text-ink">
         Tableau de bord
       </h1>
-      <p className="mt-1 text-body text-ink-48">
-        Espace Responsable — authentification en place (Lot 1a).
-      </p>
-      <Card className="mt-8 max-w-container-text">
-        <p className="text-caption text-ink-48">
-          Le contenu (stars de service, alertes, comptes en attente) sera
-          développé aux lots suivants.
-        </p>
+      <p className="mt-1 text-body capitalize text-ink-48">{dateLisible}</p>
+
+      {acces.star?.statut === "en_attente" && (
+        <Banner tone="info" className="mt-5 max-w-container-text">
+          Votre rôle Star est en attente de validation par un responsable.
+        </Banner>
+      )}
+
+      <Card
+        className="mt-6 max-w-container-text"
+        title="Stars de service aujourd'hui"
+        headerAction={
+          <span className="text-fine text-ink-48">
+            {shifts?.length ?? 0} planifié{(shifts?.length ?? 0) > 1 ? "s" : ""}
+          </span>
+        }
+      >
+        {shifts === null ? (
+          <Banner tone="danger">
+            Chargement des shifts du jour impossible. Rechargez la page.
+          </Banner>
+        ) : shifts.length === 0 ? (
+          <p className="text-caption text-ink-48">
+            Personne n&apos;est de service aujourd&apos;hui.
+          </p>
+        ) : (
+          <StarsDeService shifts={shifts} />
+        )}
       </Card>
     </>
   );
