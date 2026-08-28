@@ -8,7 +8,6 @@ const PUBLIC_PREFIXES = [
   "/inscription",
   "/mot-de-passe-oublie",
   "/auth",
-  "/design", // pages de vérification temporaires (Lot 0)
 ];
 
 /** Chemins de bruit (sondes, monitoring) : ne pas solliciter l'auth Supabase. */

@@ -4,9 +4,8 @@ import type { SVGProps } from "react";
  * Logo de l'application (repris de maquette/mark.svg & logo-on-dark.svg).
  * Le tracé utilise `currentColor` → contrôlable via la classe `text-*`.
  *
- * NB : le libellé de la maquette est « Obscura » (nom générique du design
- * system). À remplacer par « DeEplan » quand la direction artistique du
- * wordmark sera tranchée.
+ * Le wordmark porte « DeEplan » (décision produit #1, 2026-08-28 — la maquette
+ * affichait « Obscura », nom générique du design system).
  */
 
 type MarkProps = SVGProps<SVGSVGElement> & { title?: string };
@@ -76,7 +75,7 @@ export function LogoWordmark({ title = "DeEplan", ...props }: MarkProps) {
         letterSpacing="-0.6"
         fill="currentColor"
       >
-        Obscura
+        DeEplan
       </text>
     </svg>
   );

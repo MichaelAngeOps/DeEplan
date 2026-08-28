@@ -24,7 +24,9 @@ export function ResponsableShell({
         footerExtra={sidebarFooter}
         className="sticky top-0 h-screen"
       />
-      <main className="relative min-w-0 flex-1 px-11 pb-20 pt-9">{children}</main>
+      <main className="relative min-w-0 flex-1 px-5 pb-20 pt-9 lg:px-11">
+        {children}
+      </main>
     </div>
   );
 }
