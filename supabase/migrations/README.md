@@ -16,6 +16,7 @@ le fichier `.sql` est déposé ici pour l'historique et le rollback.
 | 20260828063732 | notifications_insert_par_responsable | policy INSERT sur `notifications` : un responsable notifie les stars de son département (Lot 5d) |
 | 20260828072237 | revoke_execute_fonctions_rls | ⚠️ **annulée** — tentative de fermer l'advisor 0028/0029, cassait les policies SELECT (PG 17 exige EXECUTE pour l'évaluation des policies) |
 | 20260828072334 | regrant_execute_fonctions_rls | rétablit EXECUTE ; advisor 0028/0029 **accepté** (voir `docs/SCHEMA.md` #7) |
+| 20260828201350 | star_choisit_departement_a_inscription | `roles_utilisateurs.departement_id` (Lot A2) : le star choisit son département → RLS scopée (responsable = son dept uniquement, fin du « v1 » permissif) + trigger notif « département créé » |
 
 Régénérer les types après toute migration :
 `npx supabase gen types typescript --project-id wjsvygzatbguwzzzvopv > src/types/supabase.ts`

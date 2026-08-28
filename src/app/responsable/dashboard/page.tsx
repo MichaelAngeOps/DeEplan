@@ -27,7 +27,7 @@ export default async function DashboardPage() {
       getShiftsDuJour(departementId, aujourdhuiISO()),
       getConflitsDispo(departementId),
       getShiftsAConfirmer(departementId),
-      getComptesEnAttente().then((c) => c.length),
+      getComptesEnAttente(departementId).then((c) => c.length),
     ]);
   } catch {
     shifts = null;

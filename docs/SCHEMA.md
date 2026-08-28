@@ -24,9 +24,14 @@ Pas de trigger `auth.users` → `public.utilisateurs` : **l'app crée la ligne**
 | `utilisateur_id` | uuid → utilisateurs | |
 | `role` | text | CHECK `('responsable','star')` |
 | `statut` | text | CHECK `('en_attente','valide','desactive')`, default `en_attente` |
+| `departement_id` | uuid → departements **nullable** (migration `20260828201350`, Lot A2) | département cible choisi par le star à l'inscription (avant validation) |
 | `date_creation` | timestamptz | |
 
 **Unique** `(utilisateur_id, role)`. Le rôle `desactive` sert de **soft-delete** (décision produit #6).
+
+**Trigger** `trg_notifier_stars_sans_departement` : `AFTER INSERT ON departements` →
+crée une notification `departement_cree` pour chaque star `en_attente` sans
+`departement_id` (fonction `notifier_stars_sans_departement`, SECURITY DEFINER).
 
 ### `departements`
 `id` PK · `nom` text · `description` text nullable · `responsable_id` uuid → utilisateurs.
@@ -83,9 +88,9 @@ Index `(utilisateur_id, lu)`.
 
 | Table | Lecture | Écriture |
 |---|---|---|
-| `utilisateurs` | sa propre ligne ; **responsable** voit ses stars + les stars `en_attente` (v1 : *tout* responsable) | insert/update sa propre ligne |
-| `roles_utilisateurs` | ses propres rôles ; responsable voit les rôles `star` (v1) | insert son propre rôle ; responsable met à jour un rôle `star` (v1) |
-| `departements` | responsable ou star membre | responsable crée/modifie le sien (`responsable_id = auth.uid()`) |
+| `utilisateurs` | sa propre ligne ; **responsable** voit les stars de **son** département (rattachés à une section, ou `en_attente` ayant choisi son dept — migration `20260828201350`) | insert/update sa propre ligne |
+| `roles_utilisateurs` | ses propres rôles ; responsable voit/valide les rôles `star` de **son** département | insert son propre rôle (`statut='en_attente'` forcé) ; **star** renseigne `departement_id` tant qu'il est `en_attente` ; responsable valide un rôle `star` de son dept |
+| `departements` | responsable ou star membre ; **tout utilisateur connecté** peut lister (sélecteur d'inscription — migration `20260828201350`) | responsable crée/modifie le sien (`responsable_id = auth.uid()`) |
 | `sections`, `postes` | membre du département | responsable du département (ALL) |
 | `star_sections` | le star concerné, ou le responsable du département | responsable du département (ALL) |
 | `disponibilites` | le star ; le responsable des sections du star | le star gère les siennes (`star_id = auth.uid()`) |
@@ -109,9 +114,10 @@ Index `(utilisateur_id, lu)`.
 4. ✅ **CORRIGÉ** (migration `20260828…durcir_rls_roles_et_search_path`) — la
    policy INSERT de `roles_utilisateurs` impose maintenant
    `statut = 'en_attente'`. Un compte ne peut plus s'auto-valider.
-5. **Policies « v1 »** : `roles_utilisateurs` / `utilisateurs` laissent *tout*
-   responsable voir/valider *tout* star (pas de restriction au département).
-   Simplification connue, à resserrer plus tard.
+5. ✅ **CORRIGÉ** (migration `20260828201350`, Lot A2) — `roles_utilisateurs` /
+   `utilisateurs` sont désormais **scopées au département** : un responsable ne
+   voit/valide que les stars rattachés à une de ses sections OU en attente ayant
+   choisi son département. Fin du « v1 » permissif pour ce cas.
 6. ✅ **CORRIGÉ** (même migration) — `search_path` des 3 fonctions RLS figé à `''`
    + tables schéma-qualifiées.
 7. **Restant (WARN, non bloquant, ACCEPTÉ)** : advisor

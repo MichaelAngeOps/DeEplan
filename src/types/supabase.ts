@@ -234,6 +234,7 @@ export type Database = {
       roles_utilisateurs: {
         Row: {
           date_creation: string;
+          departement_id: string | null;
           id: string;
           role: string;
           statut: string;
@@ -241,6 +242,7 @@ export type Database = {
         };
         Insert: {
           date_creation?: string;
+          departement_id?: string | null;
           id?: string;
           role: string;
           statut?: string;
@@ -248,12 +250,20 @@ export type Database = {
         };
         Update: {
           date_creation?: string;
+          departement_id?: string | null;
           id?: string;
           role?: string;
           statut?: string;
           utilisateur_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "roles_utilisateurs_departement_id_fkey";
+            columns: ["departement_id"];
+            isOneToOne: false;
+            referencedRelation: "departements";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "roles_utilisateurs_utilisateur_id_fkey";
             columns: ["utilisateur_id"];

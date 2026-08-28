@@ -77,13 +77,29 @@ export async function sinscrire(
   if (eRoles) return { erreur: "Enregistrement des rôles impossible." };
 
   if (p.roles.includes("responsable") && p.departement) {
-    const { error: eDept } = await supabase.from("departements").insert({
-      nom: p.departement.nom.trim(),
-      description: p.departement.description.trim() || null,
-      responsable_id: userId,
-    });
-    if (eDept) return { erreur: "Création du département impossible." };
+    const { data: dept, error: eDept } = await supabase
+      .from("departements")
+      .insert({
+        nom: p.departement.nom.trim(),
+        description: p.departement.description.trim() || null,
+        responsable_id: userId,
+      })
+      .select("id")
+      .single();
+    if (eDept || !dept)
+      return { erreur: "Création du département impossible." };
+
+    // Cumul Responsable + Star : le rôle star est rattaché au département créé.
+    if (p.roles.includes("star")) {
+      await supabase
+        .from("roles_utilisateurs")
+        .update({ departement_id: dept.id })
+        .eq("utilisateur_id", userId)
+        .eq("role", "star");
+    }
   }
 
-  redirect(p.roles.includes("responsable") ? "/bienvenue" : "/compte-en-attente");
+  if (p.roles.includes("responsable")) redirect("/bienvenue");
+  // Star seul : il choisit d'abord son département cible.
+  redirect("/choisir-departement");
 }

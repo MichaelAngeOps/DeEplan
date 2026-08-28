@@ -10,22 +10,20 @@ export interface CompteEnAttente {
 }
 
 /**
- * Comptes star en attente de validation.
- *
- * ⚠️ Politiques RLS « v1 » : un star en attente n'est rattaché à aucun
- * département tant qu'il n'est pas validé → **tout responsable voit tous les
- * comptes en attente** (limitation connue, cf. `docs/SCHEMA.md` #5). Le
- * rattachement se fait à la validation (assignation aux sections du département).
+ * Comptes star en attente de validation **pour un département donné** (Lot A2) :
+ * stars ayant choisi ce département à l'inscription. RLS scopée depuis la
+ * migration `star_choisit_departement_a_inscription`.
  */
 export const getComptesEnAttente = cache(
-  async (): Promise<CompteEnAttente[]> => {
+  async (departementId: string): Promise<CompteEnAttente[]> => {
     const supabase = await createClient();
 
     const { data: roles } = await supabase
       .from("roles_utilisateurs")
       .select("utilisateur_id")
       .eq("role", "star")
-      .eq("statut", "en_attente");
+      .eq("statut", "en_attente")
+      .eq("departement_id", departementId);
 
     const ids = (roles ?? []).map((r) => r.utilisateur_id);
     if (ids.length === 0) return [];

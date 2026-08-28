@@ -15,7 +15,7 @@ export default async function ValidationsPage() {
   let sections;
   try {
     [comptes, sections] = await Promise.all([
-      getComptesEnAttente(),
+      getComptesEnAttente(acces.departementId),
       getStructure(acces.departementId),
     ]);
   } catch {
