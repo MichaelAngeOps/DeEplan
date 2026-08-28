@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Clock } from "lucide-react";
+import { Ban, Clock } from "lucide-react";
 import { AuthShell } from "@/components/layout";
 import { deconnexion } from "@/lib/actions/auth";
 import { getAcces } from "@/lib/auth";
@@ -13,19 +13,27 @@ export default async function CompteEnAttentePage() {
     redirect("/apres-login");
   }
 
+  const refuse = acces.star?.statut === "desactive";
+
   return (
     <AuthShell>
       <div className="flex flex-col items-center gap-3 text-center">
         <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-parchment">
-          <Clock size={24} className="text-accent" />
+          {refuse ? (
+            <Ban size={24} className="text-danger" />
+          ) : (
+            <Clock size={24} className="text-accent" />
+          )}
         </span>
         <h1 className="font-display text-[20px] font-semibold tracking-[-0.3px] text-ink">
-          Compte en attente de validation
+          {refuse
+            ? "Compte non validé"
+            : "Compte en attente de validation"}
         </h1>
         <p className="text-caption text-ink-80">
-          Votre inscription doit être validée par un responsable, qui vous
-          affectera à une ou plusieurs sections. Vous recevrez l&apos;accès dès
-          la confirmation.
+          {refuse
+            ? "Votre inscription n'a pas été retenue par un responsable. Contactez votre responsable si vous pensez qu'il s'agit d'une erreur."
+            : "Votre inscription doit être validée par un responsable, qui vous affectera à une ou plusieurs sections. Vous recevrez l'accès dès la confirmation."}
         </p>
         <p className="text-fine text-ink-48">
           Aucun accès à l&apos;application n&apos;est possible pour le moment.
