@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, ClockAlert, TriangleAlert, UserPlus } from "lucide-react";
 import { Card } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { dateCourteFr } from "@/lib/dates";
 import type { ConflitDispo, ShiftAConfirmer } from "@/lib/data/dashboard";
 
@@ -13,11 +14,19 @@ export function AlertesPanel({
   aConfirmer: ShiftAConfirmer[];
   nbEnAttente: number;
 }) {
+  const alerteActive = conflits.length > 0 || aConfirmer.length > 0;
+
   return (
-    <Card title="Alertes">
+    <Card
+      title="Alertes"
+      className={cn(
+        alerteActive && "border-danger ring-2 ring-danger/30",
+      )}
+    >
       <Bloc
         icon={<ClockAlert size={15} className="text-warning" />}
         titre="Statuts non confirmés depuis 24 h"
+        alerte={aConfirmer.length > 0}
       >
         {aConfirmer.length === 0 ? (
           <Vide>Aucun.</Vide>
@@ -33,6 +42,7 @@ export function AlertesPanel({
       <Bloc
         icon={<TriangleAlert size={15} className="text-danger" />}
         titre="Conflits de disponibilité non résolus"
+        alerte={conflits.length > 0}
       >
         {conflits.length === 0 ? (
           <Vide>Aucun conflit.</Vide>
@@ -66,14 +76,23 @@ export function AlertesPanel({
 function Bloc({
   icon,
   titre,
+  alerte,
   children,
 }: {
   icon: React.ReactNode;
   titre: string;
+  alerte?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-5">
+    <div
+      className={cn(
+        "mb-4 rounded-md p-3",
+        alerte
+          ? "border border-danger/60 bg-danger/5"
+          : "border border-transparent",
+      )}
+    >
       <div className="mb-2 flex items-center gap-2">
         {icon}
         <span className="text-caption-strong text-ink">{titre}</span>

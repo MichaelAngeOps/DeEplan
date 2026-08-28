@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { UserCheck, UserX } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button, Modal } from "@/components/ui";
 import { definirActivationStar } from "@/lib/actions/annuaire";
 
 export function FicheStarActions({
@@ -14,12 +14,14 @@ export function FicheStarActions({
 }) {
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
+  const [confirmation, setConfirmation] = useState(false);
 
-  async function basculer() {
+  async function appliquer(nouvelEtat: boolean) {
     setEnCours(true);
     setErreur(null);
-    const res = await definirActivationStar(starId, !actif);
+    const res = await definirActivationStar(starId, nouvelEtat);
     setEnCours(false);
+    setConfirmation(false);
     if (!res.ok) setErreur(res.erreur);
   }
 
@@ -29,16 +31,47 @@ export function FicheStarActions({
         variant={actif ? "danger" : "primary"}
         size="sm"
         leftIcon={actif ? <UserX size={14} /> : <UserCheck size={14} />}
-        onClick={basculer}
+        onClick={() => (actif ? setConfirmation(true) : appliquer(true))}
         disabled={enCours}
       >
-        {enCours
+        {enCours && !confirmation
           ? "…"
           : actif
             ? "Désactiver le compte"
             : "Réactiver le compte"}
       </Button>
       {erreur && <p className="text-fine text-danger">{erreur}</p>}
+
+      {confirmation && (
+        <Modal
+          open
+          onClose={() => setConfirmation(false)}
+          title="Désactiver ce compte ?"
+        >
+          <p className="mt-2 text-caption text-ink-80">
+            Êtes-vous sûr de vouloir désactiver ce compte ? Le star perdra
+            l&apos;accès à l&apos;application. Son historique (planning,
+            disponibilités) est conservé et le compte peut être réactivé.
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setConfirmation(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => appliquer(false)}
+              disabled={enCours}
+            >
+              {enCours ? "Désactivation…" : "Désactiver"}
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

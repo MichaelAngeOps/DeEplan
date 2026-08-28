@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { StarShell } from "@/components/layout";
-import { DeconnexionButton } from "@/components/layout/DeconnexionButton";
+import { ProfilFooter } from "@/components/layout/ProfilFooter";
 import { getAcces, getUser, getUtilisateur } from "@/lib/auth";
 import { getNbNotificationsNonLues } from "@/lib/data/notifications";
 
@@ -28,7 +28,18 @@ export default async function StarLayout({
     <StarShell
       user={{ name: nom, role: "Star" }}
       mobileTitle="DeEplan"
-      sidebarFooter={<DeconnexionButton />}
+      sidebarFooter={
+        <ProfilFooter
+          autreEspace={
+            acces.estResponsable
+              ? {
+                  href: "/responsable/dashboard",
+                  label: "Passer à l'espace Responsable",
+                }
+              : undefined
+          }
+        />
+      }
       badges={{ "/star/notifications": nbNonLues }}
     >
       {children}
