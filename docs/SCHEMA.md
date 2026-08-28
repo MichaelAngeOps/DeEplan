@@ -114,10 +114,16 @@ Index `(utilisateur_id, lu)`.
    Simplification connue, à resserrer plus tard.
 6. ✅ **CORRIGÉ** (même migration) — `search_path` des 3 fonctions RLS figé à `''`
    + tables schéma-qualifiées.
-7. **Restant (WARN, non bloquant)** : advisor `*_security_definer_function_executable`
-   sur les 3 fonctions RLS (appelables via `/rest/v1/rpc/…`). Sans risque réel
-   (elles ne renvoient qu'un booléen sur l'utilisateur *appelant*). Durcissement
-   optionnel : `revoke execute on function … from anon, authenticated;`.
+7. **Restant (WARN, non bloquant, ACCEPTÉ)** : advisor
+   `*_security_definer_function_executable` (0028/0029) sur les 3 fonctions RLS.
+   Sans risque réel (elles ne renvoient qu'un booléen sur l'utilisateur
+   *appelant*, via `auth.uid()`, et ont `search_path=''`).
+   **`revoke execute` testé le 2026-08-28 → REJETÉ** : sous PostgreSQL 17,
+   l'évaluation d'une policy RLS exige le privilège EXECUTE côté rôle appelant ;
+   révoquer casse les SELECT de `departements` / `postes` / `sections` /
+   `annonces` (policies qui invoquent `is_star_in_departement` /
+   `is_responsable_of`). Migrations `20260828072237` (revoke) + `20260828072334`
+   (regrant). L'advisor reste affiché volontairement.
 
 ## Régénérer les types
 
