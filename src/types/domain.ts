@@ -1,121 +1,75 @@
 /**
- * Types métier de DeEplan.
+ * Types métier de DeEplan — dérivés du schéma Supabase réel (`./supabase.ts`,
+ * vérifié le 2026-08-28).
  *
- * ⚠️ PROVISOIRE — à aligner sur le schéma Supabase réel (10 tables du prompt §7)
- * lors de l'étape « Vérification du schéma » qui précède le Lot 1. Les noms de
- * champs sont ici en camelCase ; le mapping vers/depuis les colonnes Postgres
- * (souvent snake_case) sera fait dans la couche d'accès aux données.
+ * Les colonnes `statut` / `role` sont des `text` avec contrainte CHECK côté
+ * Postgres ; on les resserre ici en unions littérales.
  */
 
-export type UUID = string;
-/** Date ISO `YYYY-MM-DD`. */
-export type IsoDate = string;
-/** Timestamp ISO 8601. */
-export type IsoDateTime = string;
+import type { Tables } from "./supabase";
 
 // --------------------------------------------------------------------------
-// Rôles & utilisateurs
+// Alias des lignes de tables
 // --------------------------------------------------------------------------
 
+export type Utilisateur = Tables<"utilisateurs">;
+export type RoleUtilisateurRow = Tables<"roles_utilisateurs">;
+export type Departement = Tables<"departements">;
+export type Section = Tables<"sections">;
+export type Poste = Tables<"postes">;
+export type StarSection = Tables<"star_sections">;
+export type DisponibiliteRow = Tables<"disponibilites">;
+export type PlanningRow = Tables<"plannings">;
+export type AnnonceRow = Tables<"annonces">;
+export type NotificationRow = Tables<"notifications">;
+
+// --------------------------------------------------------------------------
+// Unions littérales (contraintes CHECK du schéma)
+// --------------------------------------------------------------------------
+
+/** `roles_utilisateurs.role` — CHECK (role IN ('responsable','star')). */
 export type Role = "responsable" | "star";
 
-/** Statut d'un compte (validation par un responsable pour le rôle star). */
-export type StatutCompte = "en_attente" | "actif" | "desactive";
+/** `roles_utilisateurs.statut` — CHECK (statut IN ('en_attente','valide','desactive')). */
+export type StatutRole = "en_attente" | "valide" | "desactive";
 
-export interface Utilisateur {
-  id: UUID;
-  prenom: string;
-  nom: string;
-  email: string;
-  roles: Role[];
-  createdAt: IsoDateTime;
-}
+/** `disponibilites.statut` — CHECK (statut IN ('disponible','indisponible')).
+ *  L'absence de ligne (contrainte UNIQUE star_id+date) = « non renseigné ». */
+export type StatutDisponibilite = "disponible" | "indisponible";
 
-/** Profil « star » d'un utilisateur, rattaché à un département. */
-export interface StarProfil {
-  utilisateurId: UUID;
-  departementId: UUID;
-  statut: StatutCompte;
-  sectionIds: UUID[];
-}
-
-// --------------------------------------------------------------------------
-// Structure organisationnelle : Département → Sections → Postes
-// --------------------------------------------------------------------------
-
-export interface Departement {
-  id: UUID;
-  nom: string;
-  description: string | null;
-  responsableId: UUID;
-}
-
-export interface Section {
-  id: UUID;
-  departementId: UUID;
-  nom: string;
-}
-
-export interface Poste {
-  id: UUID;
-  sectionId: UUID;
-  nom: string;
-  /** Horaire par défaut du poste (décision produit #3). Format `HH:MM`. */
-  heureDebut: string | null;
-  heureFin: string | null;
-}
-
-// --------------------------------------------------------------------------
-// Disponibilités (décision produit #2 : binaire, journée entière)
-// --------------------------------------------------------------------------
-
-export interface Disponibilite {
-  id: UUID;
-  starId: UUID;
-  date: IsoDate;
-  disponible: boolean;
-}
-
-// --------------------------------------------------------------------------
-// Planning & statuts de shift
-// --------------------------------------------------------------------------
-
-/**
- * Statut d'un shift planifié (prompt §8).
- * L'absence de shift = « pas en service » (pas de valeur dédiée, décision #4).
- */
+/** `plannings.statut` — CHECK (…), défaut `de_service` (prompt §8). */
 export type StatutShift =
   | "de_service"
   | "a_servi"
   | "na_pas_servi"
   | "a_confirmer";
 
-export interface ShiftPlanning {
-  id: UUID;
-  posteId: UUID;
-  starId: UUID;
-  date: IsoDate;
+// --------------------------------------------------------------------------
+// Vues composites (assemblées côté app)
+// --------------------------------------------------------------------------
+
+/** Rôle d'un utilisateur avec son statut de validation. */
+export interface RoleUtilisateur {
+  role: Role;
+  statut: StatutRole;
+}
+
+/**
+ * Un « Star » vu par le responsable : l'utilisateur + ses sections + le statut
+ * de son rôle star. (Agrège `utilisateurs` + `star_sections` + `roles_utilisateurs`.)
+ */
+export interface Star {
+  utilisateur: Utilisateur;
+  statut: StatutRole;
+  sectionIds: string[];
+}
+
+/** Section avec ses postes (pour l'écran Structure / la grille de planning). */
+export interface SectionAvecPostes extends Section {
+  postes: Poste[];
+}
+
+/** Un shift planifié, statut resserré. */
+export interface Shift extends Omit<PlanningRow, "statut"> {
   statut: StatutShift;
-  updatedAt: IsoDateTime;
-}
-
-// --------------------------------------------------------------------------
-// Annonces & notifications
-// --------------------------------------------------------------------------
-
-export interface Annonce {
-  id: UUID;
-  departementId: UUID;
-  titre: string;
-  contenu: string;
-  auteurId: UUID;
-  publieeLe: IsoDateTime;
-}
-
-export interface Notification {
-  id: UUID;
-  destinataireId: UUID;
-  texte: string;
-  lue: boolean;
-  creeeLe: IsoDateTime;
 }

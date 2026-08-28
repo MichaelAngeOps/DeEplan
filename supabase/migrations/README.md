@@ -1,0 +1,17 @@
+# Migrations Supabase
+
+Le **schéma initial** (`20260827221806_initial_schema`) a été appliqué **hors de
+ce dépôt** (fourni via le prompt, prompt §7 : « ne le recrée pas »). Il n'est pas
+reproduit ici.
+
+Ce dossier ne suit que les migrations **postérieures**, appliquées sur le projet
+`deeplan-prod`. Elles sont posées via l'outil MCP Supabase (`apply_migration`) et
+le fichier `.sql` est déposé ici pour l'historique et le rollback.
+
+| Version | Nom | Objet |
+|---|---|---|
+| 20260827221806 | initial_schema | (hors dépôt) 10 tables + RLS |
+| 20260828013214 | durcir_rls_roles_et_search_path | ferme l'auto-validation de compte + `search_path` des fonctions RLS (voir `docs/SCHEMA.md`) |
+
+Régénérer les types après toute migration :
+`npx supabase gen types typescript --project-id wjsvygzatbguwzzzvopv > src/types/supabase.ts`
