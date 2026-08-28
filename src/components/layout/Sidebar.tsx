@@ -18,6 +18,8 @@ export interface SidebarProps {
   width?: number;
   /** Contenu additionnel en bas (liens démo, déconnexion…). */
   footerExtra?: React.ReactNode;
+  /** Pastilles de compteur par href (ex. notifications non lues). */
+  badges?: Record<string, number>;
   className?: string;
 }
 
@@ -27,6 +29,7 @@ export function Sidebar({
   user,
   width = 248,
   footerExtra,
+  badges,
   className,
 }: SidebarProps) {
   return (
@@ -56,6 +59,7 @@ export function Sidebar({
             href={href}
             label={label}
             icon={<Icon size={17} />}
+            badge={badges?.[href]}
           />
         ))}
       </nav>

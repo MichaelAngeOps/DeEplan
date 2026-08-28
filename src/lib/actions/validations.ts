@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAcces } from "@/lib/auth";
+import { notifier } from "@/lib/notify";
 import { createClient } from "@/lib/supabase/server";
 
 export type ActionResultat = { ok: true } | { ok: false; erreur: string };
@@ -47,7 +48,7 @@ export async function validerCompte(
 
   const { data: secs } = await supabase
     .from("sections")
-    .select("id")
+    .select("id, nom")
     .eq("departement_id", g.departementId)
     .in("id", sectionIds);
   if ((secs ?? []).length !== sectionIds.length)
@@ -68,6 +69,13 @@ export async function validerCompte(
     );
   if (eSec)
     return { ok: false, erreur: "Compte validé, mais l'assignation aux sections a échoué." };
+
+  const noms = (secs ?? []).map((s) => s.nom).join(", ");
+  await notifier(
+    starId,
+    "compte_valide",
+    `Votre compte a été validé. Vous êtes affecté à : ${noms}.`,
+  );
 
   revalidatePath("/responsable/validations");
   revalidatePath("/responsable/dashboard");

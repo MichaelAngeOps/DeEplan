@@ -7,6 +7,8 @@ export interface StarShellProps {
   /** Titre affiché dans le header mobile (page courante). */
   mobileTitle: string;
   sidebarFooter?: React.ReactNode;
+  /** Pastilles de compteur par href (ex. `{ "/star/notifications": 3 }`). */
+  badges?: Record<string, number>;
   children: React.ReactNode;
 }
 
@@ -19,6 +21,7 @@ export function StarShell({
   user,
   mobileTitle,
   sidebarFooter,
+  badges,
   children,
 }: StarShellProps) {
   return (
@@ -30,6 +33,7 @@ export function StarShell({
         user={user}
         width={220}
         footerExtra={sidebarFooter}
+        badges={badges}
         className="sticky top-0 hidden h-screen md:flex"
       />
 
@@ -45,7 +49,7 @@ export function StarShell({
 
         {/* Tab bar mobile */}
         <div className="md:hidden">
-          <MobileTabBar items={STAR_NAV} />
+          <MobileTabBar items={STAR_NAV} badges={badges} />
         </div>
       </div>
     </div>

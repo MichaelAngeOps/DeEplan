@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getAcces, getUser } from "@/lib/auth";
 import { getCandidats, getComptageDimanches } from "@/lib/data/candidats";
-import { estDimanche } from "@/lib/dates";
+import { dateCourteFr, estDimanche } from "@/lib/dates";
+import { notifier } from "@/lib/notify";
 import { createClient } from "@/lib/supabase/server";
 import type { Candidat } from "@/lib/data/candidats";
 
@@ -160,6 +161,27 @@ export async function assignerShift(
     if (error) return { ok: false, erreur: "Assignation impossible." };
   }
 
+  // Notifications (best-effort).
+  const { data: poste } = await supabase
+    .from("postes")
+    .select("nom")
+    .eq("id", posteId)
+    .maybeSingle();
+  const q = poste?.nom ?? "un poste";
+  const jj = dateCourteFr(date);
+  if (existant && modificationMemeStar) {
+    await notifier(starId, "shift_modifie", `Vos horaires du ${jj} (${q}) ont été modifiés.`);
+  } else {
+    await notifier(starId, "shift_assigne", `Un shift vous a été assigné : ${q} le ${jj}.`);
+    if (existant && existant.star_id !== starId) {
+      await notifier(
+        existant.star_id,
+        "shift_retire",
+        `Votre shift du ${jj} (${q}) a été réattribué à un autre star.`,
+      );
+    }
+  }
+
   revalidatePath(PATH);
   return { ok: true };
 }
@@ -201,7 +223,9 @@ export async function retirerShift(shiftId: string): Promise<ActionResultat> {
 
   const { data: shift } = await supabase
     .from("plannings")
-    .select("id, postes!inner(sections!inner(departement_id))")
+    .select(
+      "id, date, star_id, postes!inner(nom, sections!inner(departement_id))",
+    )
     .eq("id", shiftId)
     .eq("postes.sections.departement_id", g.departementId)
     .maybeSingle();
@@ -209,6 +233,13 @@ export async function retirerShift(shiftId: string): Promise<ActionResultat> {
 
   const { error } = await supabase.from("plannings").delete().eq("id", shiftId);
   if (error) return { ok: false, erreur: "Retrait impossible." };
+
+  const po = shift.postes as unknown as { nom: string };
+  await notifier(
+    shift.star_id,
+    "shift_retire",
+    `Votre shift du ${dateCourteFr(shift.date)} (${po.nom}) a été retiré.`,
+  );
 
   revalidatePath(PATH);
   return { ok: true };

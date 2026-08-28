@@ -12,11 +12,20 @@ export interface NavItemProps {
   icon: ReactNode;
   /** `sidebar` (vertical) ou `tab` (tab bar mobile). */
   variant?: "sidebar" | "tab";
+  /** Pastille de compteur (ex. notifications non lues). 0 / undefined = masquée. */
+  badge?: number;
 }
 
-export function NavItem({ href, label, icon, variant = "sidebar" }: NavItemProps) {
+export function NavItem({
+  href,
+  label,
+  icon,
+  variant = "sidebar",
+  badge,
+}: NavItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(href + "/");
+  const compteur = badge && badge > 0 ? (badge > 9 ? "9+" : String(badge)) : null;
 
   if (variant === "tab") {
     return (
@@ -24,10 +33,15 @@ export function NavItem({ href, label, icon, variant = "sidebar" }: NavItemProps
         href={href}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex flex-1 flex-col items-center gap-1 py-2.5 text-[9.5px] font-semibold",
+          "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[9.5px] font-semibold",
           isActive ? "text-accent" : "text-ink-48",
         )}
       >
+        {compteur && (
+          <span className="absolute right-[22%] top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-accent px-1 text-[8px] font-bold text-white">
+            {compteur}
+          </span>
+        )}
         {icon}
         {label}
       </Link>
@@ -47,7 +61,17 @@ export function NavItem({ href, label, icon, variant = "sidebar" }: NavItemProps
       )}
     >
       <span className="flex-none">{icon}</span>
-      <span>{label}</span>
+      <span className="flex-1">{label}</span>
+      {compteur && (
+        <span
+          className={cn(
+            "flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold",
+            isActive ? "bg-white text-accent" : "bg-accent text-white",
+          )}
+        >
+          {compteur}
+        </span>
+      )}
     </Link>
   );
 }

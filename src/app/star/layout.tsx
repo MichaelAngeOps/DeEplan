@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { StarShell } from "@/components/layout";
 import { DeconnexionButton } from "@/components/layout/DeconnexionButton";
-import { getAcces, getUtilisateur } from "@/lib/auth";
+import { getAcces, getUser, getUtilisateur } from "@/lib/auth";
+import { getNbNotificationsNonLues } from "@/lib/data/notifications";
 
 export default async function StarLayout({
   children,
@@ -20,11 +21,15 @@ export default async function StarLayout({
   const u = await getUtilisateur();
   const nom = u ? `${u.prenom} ${u.nom}`.trim() : "Star";
 
+  const user = await getUser();
+  const nbNonLues = user ? await getNbNotificationsNonLues(user.id) : 0;
+
   return (
     <StarShell
       user={{ name: nom, role: "Star" }}
       mobileTitle="DeEplan"
       sidebarFooter={<DeconnexionButton />}
+      badges={{ "/star/notifications": nbNonLues }}
     >
       {children}
     </StarShell>
