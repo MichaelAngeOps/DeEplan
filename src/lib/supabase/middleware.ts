@@ -5,7 +5,7 @@ import type { Database } from "@/types/supabase";
 
 /**
  * Rafraîchit la session Supabase à chaque requête et propage les cookies
- * mis à jour sur la réponse. Renvoie `{ response, user }`.
+ * mis à jour sur la réponse. Renvoie `{ response, user, error }`.
  *
  * IMPORTANT : ne rien exécuter entre `createServerClient` et `getUser()`
  * (risque de déconnexions aléatoires — cf. docs @supabase/ssr).
@@ -36,7 +36,8 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  return { response, user };
+  return { response, user, error };
 }
