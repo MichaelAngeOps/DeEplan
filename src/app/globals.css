@@ -2,7 +2,250 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
- * Les tokens du design system (maquette/colors_and_type.css) seront intégrés
- * ici et dans tailwind.config.ts à l'étape D.
- */
+/* =========================================================================
+   OBSCURA DESIGN SYSTEM — Foundations
+   Source de vérité : maquette/colors_and_type.css (copié verbatim ci-dessous,
+   hormis --font-display / --font-text branchés sur la police next/font).
+   Toute modification ici doit être répercutée dans tailwind.config.ts.
+   ========================================================================= */
+
+:root {
+  /* ----------------------------------------------------------------------
+     COLOR — RAW PALETTE
+     ---------------------------------------------------------------------- */
+  --accent:            #1668e3;   /* Obscura Blue — links, primary CTAs */
+  --accent-focus:      #2a78f0;   /* brighter sibling, keyboard focus ring  */
+  --accent-on-dark:    #4d9bff;   /* lighter accent for use on dark tiles   */
+
+  --ink:               #18181a;   /* headlines, body, dark utility fills    */
+  --ink-80:            #313134;   /* body on near-white button surfaces     */
+  --ink-48:            #7b7b80;   /* disabled text, fine print              */
+
+  --canvas:            #ffffff;   /* dominant canvas                        */
+  --parchment:         #f5f5f7;   /* signature off-white; alternating tile  */
+  --pearl:             #fafafc;   /* ghost-button fill (reads on parchment) */
+
+  --tile-1:            #1f1f21;   /* primary dark tile                      */
+  --tile-2:            #242427;   /* micro-step lighter                     */
+  --tile-3:            #1b1b1d;   /* micro-step darker; player frames       */
+  --black:             #000000;   /* true void — global nav, video bg       */
+
+  --on-dark:           #ffffff;
+  --on-dark-muted:     #c9c9ce;
+
+  --divider-soft:      rgba(0, 0, 0, 0.06);  /* ring-shadow border on ghost btns */
+  --hairline:          #e2e2e6;              /* 1px card / chip border           */
+  --chip-translucent:  rgba(210, 210, 215, 0.64); /* control chip over photos    */
+
+  /* ----------------------------------------------------------------------
+     COLOR — SEMANTIC ALIASES (prefer these in product code)
+     ---------------------------------------------------------------------- */
+  --fg:                var(--ink);
+  --fg-muted:          var(--ink-48);
+  --fg-on-dark:        var(--on-dark);
+  --fg-on-dark-muted:  var(--on-dark-muted);
+  --bg:                var(--canvas);
+  --bg-alt:            var(--parchment);
+  --bg-dark:           var(--tile-1);
+  --link:              var(--accent);
+  --link-on-dark:      var(--accent-on-dark);
+  --border:            var(--hairline);
+  --focus-ring:        var(--accent-focus);
+
+  /* ----------------------------------------------------------------------
+     TYPOGRAPHY — FAMILIES
+     --font-inter est fourni par next/font (src/app/layout.tsx).
+     ---------------------------------------------------------------------- */
+  --font-display: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-text:    var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --font-features: "cv05" 1, "ss03" 1; /* single-story a, rounded forms */
+
+  /* ----------------------------------------------------------------------
+     TYPOGRAPHY — TYPE SCALE
+     ---------------------------------------------------------------------- */
+  --t-hero-size:    56px;  --t-hero-weight:    600;  --t-hero-lh:    1.07;  --t-hero-ls:    -0.5px;
+  --t-dlg-size:     40px;  --t-dlg-weight:     600;  --t-dlg-lh:     1.10;  --t-dlg-ls:     -0.4px;
+  --t-dmd-size:     34px;  --t-dmd-weight:     600;  --t-dmd-lh:     1.18;  --t-dmd-ls:     -0.4px;
+  --t-lead-size:    28px;  --t-lead-weight:    400;  --t-lead-lh:    1.21;  --t-lead-ls:    -0.2px;
+  --t-airy-size:    24px;  --t-airy-weight:    300;  --t-airy-lh:    1.5;   --t-airy-ls:    -0.1px;
+  --t-tag-size:     21px;  --t-tag-weight:     600;  --t-tag-lh:     1.2;   --t-tag-ls:     -0.2px;
+  --t-bodystrong-size: 17px; --t-bodystrong-weight: 600; --t-bodystrong-lh: 1.3; --t-bodystrong-ls: -0.3px;
+  --t-body-size:    17px;  --t-body-weight:    400;  --t-body-lh:    1.47;  --t-body-ls:    -0.3px;
+  --t-caption-size: 14px;  --t-caption-weight: 400;  --t-caption-lh:  1.43; --t-caption-ls: -0.2px;
+  --t-capstrong-size: 14px; --t-capstrong-weight: 600; --t-capstrong-lh: 1.29; --t-capstrong-ls: -0.2px;
+  --t-fine-size:    12px;  --t-fine-weight:    400;  --t-fine-lh:    1.33;  --t-fine-ls:    -0.1px;
+  --t-micro-size:   10px;  --t-micro-weight:   400;  --t-micro-lh:   1.3;   --t-micro-ls:   -0.05px;
+
+  /* ----------------------------------------------------------------------
+     SPACING — 8px base, with a few sub-base typographic steps
+     ---------------------------------------------------------------------- */
+  --sp-xxs: 4px;
+  --sp-xs:  8px;
+  --sp-sm:  12px;
+  --sp-md:  17px;
+  --sp-lg:  24px;
+  --sp-xl:  32px;
+  --sp-xxl: 48px;
+  --sp-section: 80px;
+
+  /* ----------------------------------------------------------------------
+     RADII
+     ---------------------------------------------------------------------- */
+  --r-none: 0px;
+  --r-xs:   5px;
+  --r-sm:   8px;
+  --r-md:   11px;
+  --r-lg:   18px;
+  --r-pill: 9999px;
+  --r-full: 9999px;
+
+  /* ----------------------------------------------------------------------
+     ELEVATION — exactly one shadow, reserved for product imagery.
+     ---------------------------------------------------------------------- */
+  --shadow-product: 3px 5px 30px 0 rgba(0, 0, 0, 0.22);
+  --blur-frosted:   saturate(180%) blur(20px);
+
+  /* ----------------------------------------------------------------------
+     MOTION — quiet. One press transform, gentle fades.
+     ---------------------------------------------------------------------- */
+  --press-scale: 0.96;
+  --ease:        cubic-bezier(0.4, 0.0, 0.2, 1);
+  --dur-fast:    140ms;
+  --dur:         240ms;
+  --dur-slow:    420ms;
+
+  /* Layout maxima */
+  --container-text: 980px;
+  --container-grid: 1440px;
+}
+
+/* ==========================================================================
+   RESET — repris de la maquette (helmet <style>)
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg-alt);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-feature-settings: var(--font-features);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 6px;
+}
+table {
+  border-collapse: collapse;
+}
+
+/* ==========================================================================
+   SEMANTIC TYPE CLASSES — copiées verbatim de colors_and_type.css
+   ========================================================================== */
+.t-hero,
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--t-hero-size);
+  font-weight: var(--t-hero-weight);
+  line-height: var(--t-hero-lh);
+  letter-spacing: var(--t-hero-ls);
+  font-feature-settings: var(--font-features);
+}
+.t-display,
+h2 {
+  font-family: var(--font-display);
+  font-size: var(--t-dlg-size);
+  font-weight: var(--t-dlg-weight);
+  line-height: var(--t-dlg-lh);
+  letter-spacing: var(--t-dlg-ls);
+  font-feature-settings: var(--font-features);
+}
+.t-section,
+h3 {
+  font-family: var(--font-display);
+  font-size: var(--t-dmd-size);
+  font-weight: var(--t-dmd-weight);
+  line-height: var(--t-dmd-lh);
+  letter-spacing: var(--t-dmd-ls);
+  font-feature-settings: var(--font-features);
+}
+.t-lead {
+  font-family: var(--font-display);
+  font-size: var(--t-lead-size);
+  font-weight: var(--t-lead-weight);
+  line-height: var(--t-lead-lh);
+  letter-spacing: var(--t-lead-ls);
+}
+.t-airy {
+  font-family: var(--font-text);
+  font-size: var(--t-airy-size);
+  font-weight: var(--t-airy-weight);
+  line-height: var(--t-airy-lh);
+  letter-spacing: var(--t-airy-ls);
+}
+.t-tagline {
+  font-family: var(--font-display);
+  font-size: var(--t-tag-size);
+  font-weight: var(--t-tag-weight);
+  line-height: var(--t-tag-lh);
+  letter-spacing: var(--t-tag-ls);
+}
+.t-body-strong {
+  font-family: var(--font-text);
+  font-size: var(--t-bodystrong-size);
+  font-weight: var(--t-bodystrong-weight);
+  line-height: var(--t-bodystrong-lh);
+  letter-spacing: var(--t-bodystrong-ls);
+}
+.t-body,
+p {
+  font-family: var(--font-text);
+  font-size: var(--t-body-size);
+  font-weight: var(--t-body-weight);
+  line-height: var(--t-body-lh);
+  letter-spacing: var(--t-body-ls);
+}
+.t-caption {
+  font-family: var(--font-text);
+  font-size: var(--t-caption-size);
+  font-weight: var(--t-caption-weight);
+  line-height: var(--t-caption-lh);
+  letter-spacing: var(--t-caption-ls);
+}
+.t-caption-strong {
+  font-family: var(--font-text);
+  font-size: var(--t-capstrong-size);
+  font-weight: var(--t-capstrong-weight);
+  line-height: var(--t-capstrong-lh);
+  letter-spacing: var(--t-capstrong-ls);
+}
+.t-fine {
+  font-family: var(--font-text);
+  font-size: var(--t-fine-size);
+  font-weight: var(--t-fine-weight);
+  line-height: var(--t-fine-lh);
+  letter-spacing: var(--t-fine-ls);
+}
+.t-micro {
+  font-family: var(--font-text);
+  font-size: var(--t-micro-size);
+  font-weight: var(--t-micro-weight);
+  line-height: var(--t-micro-lh);
+  letter-spacing: var(--t-micro-ls);
+}
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
