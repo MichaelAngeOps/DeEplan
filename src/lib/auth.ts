@@ -16,10 +16,17 @@ export interface Acces {
 /** Utilisateur `auth` courant (session vérifiée côté serveur), ou `null`. */
 export const getUser = cache(async (): Promise<User | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+
+  // Une erreur transitoire (429 rate limit, 5xx) ne doit pas faire passer un
+  // utilisateur connecté pour déconnecté → une nouvelle tentative après pause.
+  for (let essai = 0; essai < 2; essai++) {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error) return data.user;
+    const transitoire = error.status === 429 || (error.status ?? 0) >= 500;
+    if (!transitoire || essai === 1) return null;
+    await new Promise((r) => setTimeout(r, 600));
+  }
+  return null;
 });
 
 /** Ligne `public.utilisateurs` de l'utilisateur courant, ou `null`. */
