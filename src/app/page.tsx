@@ -24,6 +24,12 @@ export default function Home() {
         >
           Composants UI
         </Link>
+        <Link
+          href="/design/layouts"
+          className="rounded-pill border border-hairline bg-pearl px-4 py-2 text-caption-strong text-ink-80"
+        >
+          Layouts
+        </Link>
       </nav>
     </main>
   );
