@@ -37,8 +37,8 @@ export function FicheStarActions({
         {enCours && !confirmation
           ? "…"
           : actif
-            ? "Désactiver le compte"
-            : "Réactiver le compte"}
+            ? "Retirer du département"
+            : "Réintégrer"}
       </Button>
       {erreur && <p className="text-fine text-danger">{erreur}</p>}
 
@@ -46,12 +46,12 @@ export function FicheStarActions({
         <Modal
           open
           onClose={() => setConfirmation(false)}
-          title="Désactiver ce compte ?"
+          title="Retirer ce star du département ?"
         >
           <p className="mt-2 text-caption text-ink-80">
-            Êtes-vous sûr de vouloir désactiver ce compte ? Le star perdra
-            l&apos;accès à l&apos;application. Son historique (planning,
-            disponibilités) est conservé et le compte peut être réactivé.
+            Êtes-vous sûr de vouloir retirer ce star de votre département ? Il
+            sera désassigné de vos sections et perdra l&apos;accès à vos
+            plannings. Ses autres départements et son historique sont conservés.
           </p>
           <div className="mt-5 flex justify-end gap-2">
             <Button
@@ -67,7 +67,7 @@ export function FicheStarActions({
               onClick={() => appliquer(false)}
               disabled={enCours}
             >
-              {enCours ? "Désactivation…" : "Désactiver"}
+              {enCours ? "Retrait…" : "Retirer"}
             </Button>
           </div>
         </Modal>

@@ -16,21 +16,31 @@ async function garde(): Promise<
   return { ok: true, departementId: acces.departementId };
 }
 
-async function estStarEnAttente(
+/** La demande du star pour ce département est-elle encore en attente ? */
+async function demandeEnAttente(
   supabase: Awaited<ReturnType<typeof createClient>>,
   starId: string,
+  departementId: string,
 ): Promise<boolean> {
   const { data } = await supabase
-    .from("roles_utilisateurs")
-    .select("id")
-    .eq("utilisateur_id", starId)
-    .eq("role", "star")
-    .eq("statut", "en_attente")
+    .from("demandes_departement")
+    .select("statut")
+    .eq("star_id", starId)
+    .eq("departement_id", departementId)
     .maybeSingle();
-  return Boolean(data);
+  return data?.statut === "en_attente";
 }
 
-/** Valide un compte star et l'assigne à une ou plusieurs sections du département. */
+function revalider() {
+  revalidatePath("/responsable/validations");
+  revalidatePath("/responsable/dashboard");
+  revalidatePath("/responsable/stars");
+}
+
+/**
+ * Valide la demande du star pour ce département et l'assigne à des sections.
+ * Le statut global du rôle star est synchronisé par trigger.
+ */
 export async function validerCompte(
   starId: string,
   sectionIds: string[],
@@ -43,8 +53,8 @@ export async function validerCompte(
 
   const supabase = await createClient();
 
-  if (!(await estStarEnAttente(supabase, starId)))
-    return { ok: false, erreur: "Ce compte n'est plus en attente." };
+  if (!(await demandeEnAttente(supabase, starId, g.departementId)))
+    return { ok: false, erreur: "Cette demande n'est plus en attente." };
 
   const { data: secs } = await supabase
     .from("sections")
@@ -54,12 +64,12 @@ export async function validerCompte(
   if ((secs ?? []).length !== sectionIds.length)
     return { ok: false, erreur: "Section invalide." };
 
-  const { error: eRole } = await supabase
-    .from("roles_utilisateurs")
+  const { error: eDemande } = await supabase
+    .from("demandes_departement")
     .update({ statut: "valide" })
-    .eq("utilisateur_id", starId)
-    .eq("role", "star");
-  if (eRole) return { ok: false, erreur: "Validation impossible. Réessayez." };
+    .eq("star_id", starId)
+    .eq("departement_id", g.departementId);
+  if (eDemande) return { ok: false, erreur: "Validation impossible. Réessayez." };
 
   const { error: eSec } = await supabase
     .from("star_sections")
@@ -68,38 +78,41 @@ export async function validerCompte(
       { onConflict: "star_id,section_id", ignoreDuplicates: true },
     );
   if (eSec)
-    return { ok: false, erreur: "Compte validé, mais l'assignation aux sections a échoué." };
+    return { ok: false, erreur: "Demande validée, mais l'assignation aux sections a échoué." };
 
+  const { data: dept } = await supabase
+    .from("departements")
+    .select("nom")
+    .eq("id", g.departementId)
+    .maybeSingle();
   const noms = (secs ?? []).map((s) => s.nom).join(", ");
   await notifier(
     starId,
     "compte_valide",
-    `Votre compte a été validé. Vous êtes affecté à : ${noms}.`,
+    `Votre demande pour « ${dept?.nom ?? "le département"} » a été validée. Vous êtes affecté à : ${noms}.`,
   );
 
-  revalidatePath("/responsable/validations");
-  revalidatePath("/responsable/dashboard");
+  revalider();
   return { ok: true };
 }
 
-/** Refuse un compte star (statut → `desactive`). */
+/** Refuse la demande du star pour ce département (n'affecte pas ses autres départements). */
 export async function refuserCompte(starId: string): Promise<ActionResultat> {
   const g = await garde();
   if (!g.ok) return g;
 
   const supabase = await createClient();
 
-  if (!(await estStarEnAttente(supabase, starId)))
-    return { ok: false, erreur: "Ce compte n'est plus en attente." };
+  if (!(await demandeEnAttente(supabase, starId, g.departementId)))
+    return { ok: false, erreur: "Cette demande n'est plus en attente." };
 
   const { error } = await supabase
-    .from("roles_utilisateurs")
-    .update({ statut: "desactive" })
-    .eq("utilisateur_id", starId)
-    .eq("role", "star");
+    .from("demandes_departement")
+    .update({ statut: "refuse" })
+    .eq("star_id", starId)
+    .eq("departement_id", g.departementId);
   if (error) return { ok: false, erreur: "Refus impossible. Réessayez." };
 
-  revalidatePath("/responsable/validations");
-  revalidatePath("/responsable/dashboard");
+  revalider();
   return { ok: true };
 }

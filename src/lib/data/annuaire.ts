@@ -2,13 +2,14 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { aujourdhuiISO, estDimanche, iso, moisDecale } from "@/lib/dates";
-import type { StatutRole, StatutShift } from "@/types/domain";
+import type { StatutShift } from "@/types/domain";
 
 export interface StarAnnuaire {
   id: string;
   nom: string;
   email: string;
-  statut: StatutRole;
+  /** Statut du star **dans ce département** : `valide` (actif) ou `refuse` (désactivé). */
+  statut: "valide" | "refuse";
   sections: string[];
   dimanchesMois: number;
 }
@@ -21,10 +22,21 @@ function bornesMoisCourant(): { debut: string; fin: string } {
   };
 }
 
-/** Stars rattachés à une section du département. */
+/** Stars du département : demandes `valide` (actifs) + `refuse` (désactivés). */
 export const getAnnuaire = cache(
   async (departementId: string): Promise<StarAnnuaire[]> => {
     const supabase = await createClient();
+
+    const { data: demandes } = await supabase
+      .from("demandes_departement")
+      .select("star_id, statut")
+      .eq("departement_id", departementId)
+      .in("statut", ["valide", "refuse"]);
+    const statutParId = new Map(
+      (demandes ?? []).map((d) => [d.star_id, d.statut as "valide" | "refuse"]),
+    );
+    const starIds = [...statutParId.keys()];
+    if (starIds.length === 0) return [];
 
     const { data: secs } = await supabase
       .from("sections")
@@ -32,23 +44,17 @@ export const getAnnuaire = cache(
       .eq("departement_id", departementId);
     const nomSection = new Map((secs ?? []).map((s) => [s.id, s.nom]));
     const secIds = [...nomSection.keys()];
-    if (secIds.length === 0) return [];
-
-    const { data: liens } = await supabase
-      .from("star_sections")
-      .select("star_id, section_id")
-      .in("section_id", secIds);
-    const starIds = [...new Set((liens ?? []).map((l) => l.star_id))];
-    if (starIds.length === 0) return [];
 
     const { debut, fin } = bornesMoisCourant();
-    const [users, roles, plannings] = await Promise.all([
+    const [users, liensRes, plannings] = await Promise.all([
       supabase.from("utilisateurs").select("id, prenom, nom, email").in("id", starIds),
-      supabase
-        .from("roles_utilisateurs")
-        .select("utilisateur_id, statut")
-        .eq("role", "star")
-        .in("utilisateur_id", starIds),
+      secIds.length
+        ? supabase
+            .from("star_sections")
+            .select("star_id, section_id")
+            .in("section_id", secIds)
+            .in("star_id", starIds)
+        : Promise.resolve({ data: [] as { star_id: string; section_id: string }[] }),
       supabase
         .from("plannings")
         .select("star_id, date, statut")
@@ -57,12 +63,10 @@ export const getAnnuaire = cache(
         .gte("date", debut)
         .lt("date", fin),
     ]);
+    const liens = liensRes.data ?? [];
 
-    const statutParId = new Map(
-      (roles.data ?? []).map((r) => [r.utilisateur_id, r.statut as StatutRole]),
-    );
     const sectionsParStar = new Map<string, string[]>();
-    for (const l of liens ?? []) {
+    for (const l of liens) {
       const nom = nomSection.get(l.section_id);
       if (!nom) continue;
       const arr = sectionsParStar.get(l.star_id) ?? [];
@@ -86,7 +90,7 @@ export const getAnnuaire = cache(
         ),
         dimanchesMois: dimanchesParStar.get(u.id) ?? 0,
       }))
-      .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+      .sort((a, b) => a.nom.localeCompare(b.nom, "fr")) as StarAnnuaire[];
   },
 );
 

@@ -38,6 +38,7 @@ export default async function StarLayout({
                 }
               : undefined
           }
+          rejoindreDepartement
         />
       }
       badges={{ "/star/notifications": nbNonLues }}

@@ -1,7 +1,7 @@
 // Serveur uniquement (dépend de next/headers via @/lib/supabase/server).
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { StatutRole, Utilisateur } from "@/types/domain";
+import type { StatutDemande, StatutRole, Utilisateur } from "@/types/domain";
 
 /** Identité minimale de l'utilisateur courant (extraite du JWT vérifié). */
 export interface UtilisateurAuth {
@@ -16,10 +16,11 @@ export interface Acces {
   departementId: string | null;
   /** Rôle « star » si présent (quel que soit son statut), sinon `null`. */
   star: {
+    /** Statut global du rôle (cache dérivé des demandes, via trigger). */
     statut: StatutRole;
     sectionIds: string[];
-    /** Département choisi à l'inscription (avant validation), ou `null`. */
-    departementChoisi: string | null;
+    /** Une entrée par département demandé (multi-département, Lot A2-bis). */
+    departements: { id: string; statut: StatutDemande }[];
   } | null;
 }
 
@@ -55,13 +56,17 @@ export const getAcces = cache(async (): Promise<Acces | null> => {
   if (!user) return null;
 
   const supabase = await createClient();
-  const [departements, roles, sections] = await Promise.all([
+  const [departements, roles, sections, demandes] = await Promise.all([
     supabase.from("departements").select("id").eq("responsable_id", user.id),
     supabase
       .from("roles_utilisateurs")
-      .select("role, statut, departement_id")
+      .select("role, statut")
       .eq("utilisateur_id", user.id),
     supabase.from("star_sections").select("section_id").eq("star_id", user.id),
+    supabase
+      .from("demandes_departement")
+      .select("departement_id, statut")
+      .eq("star_id", user.id),
   ]);
 
   const roleStar = roles.data?.find((r) => r.role === "star");
@@ -73,7 +78,10 @@ export const getAcces = cache(async (): Promise<Acces | null> => {
       ? {
           statut: roleStar.statut as StatutRole,
           sectionIds: (sections.data ?? []).map((s) => s.section_id),
-          departementChoisi: roleStar.departement_id ?? null,
+          departements: (demandes.data ?? []).map((d) => ({
+            id: d.departement_id,
+            statut: d.statut as StatutDemande,
+          })),
         }
       : null,
   };

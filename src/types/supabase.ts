@@ -231,10 +231,45 @@ export type Database = {
           },
         ];
       };
+      demandes_departement: {
+        Row: {
+          date_demande: string;
+          departement_id: string;
+          star_id: string;
+          statut: string;
+        };
+        Insert: {
+          date_demande?: string;
+          departement_id: string;
+          star_id: string;
+          statut?: string;
+        };
+        Update: {
+          date_demande?: string;
+          departement_id?: string;
+          star_id?: string;
+          statut?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "demandes_departement_departement_id_fkey";
+            columns: ["departement_id"];
+            isOneToOne: false;
+            referencedRelation: "departements";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "demandes_departement_star_id_fkey";
+            columns: ["star_id"];
+            isOneToOne: false;
+            referencedRelation: "utilisateurs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       roles_utilisateurs: {
         Row: {
           date_creation: string;
-          departement_id: string | null;
           id: string;
           role: string;
           statut: string;
@@ -242,7 +277,6 @@ export type Database = {
         };
         Insert: {
           date_creation?: string;
-          departement_id?: string | null;
           id?: string;
           role: string;
           statut?: string;
@@ -250,20 +284,12 @@ export type Database = {
         };
         Update: {
           date_creation?: string;
-          departement_id?: string | null;
           id?: string;
           role?: string;
           statut?: string;
           utilisateur_id?: string;
         };
         Relationships: [
-          {
-            foreignKeyName: "roles_utilisateurs_departement_id_fkey";
-            columns: ["departement_id"];
-            isOneToOne: false;
-            referencedRelation: "departements";
-            referencedColumns: ["id"];
-          },
           {
             foreignKeyName: "roles_utilisateurs_utilisateur_id_fkey";
             columns: ["utilisateur_id"];
@@ -338,6 +364,10 @@ export type Database = {
       is_any_responsable: { Args: Record<never, never>; Returns: boolean };
       is_responsable_of: { Args: { dept_id: string }; Returns: boolean };
       is_star_in_departement: { Args: { dept_id: string }; Returns: boolean };
+      stars_planifies_le: {
+        Args: { p_stars: string[]; p_date: string; p_exclure_poste: string | null };
+        Returns: string[];
+      };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;

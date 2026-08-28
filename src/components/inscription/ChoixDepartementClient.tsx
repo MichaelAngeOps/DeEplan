@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";
 import { Button, Modal } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { choisirDepartement } from "@/lib/actions/choix-departement";
+import { choisirDepartements } from "@/lib/actions/choix-departement";
 
 export function ChoixDepartementClient({
   departements,
@@ -13,17 +13,26 @@ export function ChoixDepartementClient({
   departements: { id: string; nom: string }[];
 }) {
   const router = useRouter();
-  const [choix, setChoix] = useState<string | null>(null);
+  const [choix, setChoix] = useState<Set<string>>(new Set());
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
   const [confirmSansDept, setConfirmSansDept] = useState(false);
 
+  function toggle(id: string) {
+    setErreur(null);
+    setChoix((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
   async function valider() {
-    if (!choix) return;
+    if (choix.size === 0) return;
     setEnCours(true);
     setErreur(null);
-    const res = await choisirDepartement(choix);
-    // succès = redirection serveur ; on n'arrive ici qu'en cas d'erreur
+    const res = await choisirDepartements([...choix]);
     setEnCours(false);
     if (!res.ok) setErreur(res.erreur);
   }
@@ -34,8 +43,9 @@ export function ChoixDepartementClient({
         <div className="flex items-start gap-2.5 rounded-md border border-hairline bg-parchment px-4 py-3">
           <Info size={16} className="mt-0.5 flex-none text-accent" />
           <p className="text-fine text-ink-80">
-            Aucun département n&apos;est actif pour le moment. Vous serez notifié
-            dès qu&apos;un département sera créé et pourrez alors le rejoindre.
+            Aucun département n&apos;est disponible pour l&apos;instant. Vous serez
+            notifié dès qu&apos;un département sera créé et pourrez alors le
+            rejoindre.
           </p>
         </div>
         <Button
@@ -53,7 +63,7 @@ export function ChoixDepartementClient({
             title="Continuer sans département ?"
           >
             <p className="mt-2 text-caption text-ink-80">
-              Votre compte sera créé en attente. Vous pourrez choisir votre
+              Votre compte reste en attente. Vous pourrez rejoindre un
               département dès qu&apos;un sera disponible, puis attendre la
               validation du responsable.
             </p>
@@ -81,29 +91,28 @@ export function ChoixDepartementClient({
   return (
     <>
       <div className="flex flex-col gap-2">
-        {departements.map((d) => (
-          <label
-            key={d.id}
-            className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-lg border p-4 text-[14px] font-semibold",
-              choix === d.id
-                ? "border-accent bg-parchment text-ink"
-                : "border-hairline bg-canvas text-ink-80",
-            )}
-          >
-            <input
-              type="radio"
-              name="departement"
-              checked={choix === d.id}
-              onChange={() => {
-                setChoix(d.id);
-                setErreur(null);
-              }}
-              className="h-4 w-4 accent-accent"
-            />
-            {d.nom}
-          </label>
-        ))}
+        {departements.map((d) => {
+          const on = choix.has(d.id);
+          return (
+            <label
+              key={d.id}
+              className={cn(
+                "flex cursor-pointer items-center gap-3 rounded-lg border p-4 text-[14px] font-semibold",
+                on
+                  ? "border-accent bg-parchment text-ink"
+                  : "border-hairline bg-canvas text-ink-80",
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={() => toggle(d.id)}
+                className="h-4 w-4 accent-accent"
+              />
+              {d.nom}
+            </label>
+          );
+        })}
       </div>
 
       {erreur && (
@@ -116,9 +125,13 @@ export function ChoixDepartementClient({
         fullWidth
         className="mt-5"
         onClick={valider}
-        disabled={!choix || enCours}
+        disabled={choix.size === 0 || enCours}
       >
-        {enCours ? "Enregistrement…" : "Valider"}
+        {enCours
+          ? "Enregistrement…"
+          : `Demander à rejoindre ${
+              choix.size > 1 ? `${choix.size} départements` : "ce département"
+            }`}
       </Button>
     </>
   );

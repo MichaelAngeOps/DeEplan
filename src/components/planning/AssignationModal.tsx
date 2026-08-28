@@ -190,7 +190,12 @@ export function AssignationModal({
                 <p className="text-caption-strong text-ink">{c.nom}</p>
                 <p className="text-fine text-ink-48">
                   Disponible ce jour
-                  {c.dejaPlanifieAilleurs && " · déjà planifié ailleurs"}
+                  {c.dejaPlanifieAilleurs && (
+                    <span className="text-warning">
+                      {" "}
+                      · ⚠ déjà planifié ce jour-là
+                    </span>
+                  )}
                 </p>
               </div>
               <Button

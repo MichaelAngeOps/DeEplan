@@ -18,6 +18,7 @@ export type Departement = Tables<"departements">;
 export type Section = Tables<"sections">;
 export type Poste = Tables<"postes">;
 export type StarSection = Tables<"star_sections">;
+export type DemandeDepartementRow = Tables<"demandes_departement">;
 export type DisponibiliteRow = Tables<"disponibilites">;
 export type PlanningRow = Tables<"plannings">;
 export type AnnonceRow = Tables<"annonces">;
@@ -32,6 +33,9 @@ export type Role = "responsable" | "star";
 
 /** `roles_utilisateurs.statut` — CHECK (statut IN ('en_attente','valide','desactive')). */
 export type StatutRole = "en_attente" | "valide" | "desactive";
+
+/** `demandes_departement.statut` — CHECK (statut IN ('en_attente','valide','refuse')). */
+export type StatutDemande = "en_attente" | "valide" | "refuse";
 
 /** `disponibilites.statut` — CHECK (statut IN ('disponible','indisponible')).
  *  L'absence de ligne (contrainte UNIQUE star_id+date) = « non renseigné ». */

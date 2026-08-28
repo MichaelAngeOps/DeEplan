@@ -26,7 +26,7 @@ export const getCandidats = cache(
     const starIds = (liens ?? []).map((l) => l.star_id);
     if (starIds.length === 0) return [];
 
-    const [roles, users, dispos, plannings] = await Promise.all([
+    const [roles, users, dispos, planifiesAilleurs] = await Promise.all([
       supabase
         .from("roles_utilisateurs")
         .select("utilisateur_id, statut")
@@ -38,11 +38,13 @@ export const getCandidats = cache(
         .select("star_id, statut")
         .eq("date", dateISO)
         .in("star_id", starIds),
-      supabase
-        .from("plannings")
-        .select("star_id, poste_id")
-        .eq("date", dateISO)
-        .in("star_id", starIds),
+      // Déjà planifié ce jour-là, **tous départements confondus** (fonction
+      // SECURITY DEFINER — le responsable ne voit que ses propres plannings).
+      supabase.rpc("stars_planifies_le", {
+        p_stars: starIds,
+        p_date: dateISO,
+        p_exclure_poste: posteId,
+      }),
     ]);
 
     const valides = new Set(
@@ -58,15 +60,16 @@ export const getCandidats = cache(
     const nomParId = new Map(
       (users.data ?? []).map((u) => [u.id, `${u.prenom} ${u.nom}`.trim()]),
     );
+    const planifies = new Set(
+      ((planifiesAilleurs.data as string[] | null) ?? []),
+    );
 
     return starIds
       .filter((id) => valides.has(id) && disponibles.has(id))
       .map((id) => ({
         id,
         nom: nomParId.get(id) ?? "Star",
-        dejaPlanifieAilleurs: (plannings.data ?? []).some(
-          (p) => p.star_id === id && p.poste_id !== posteId,
-        ),
+        dejaPlanifieAilleurs: planifies.has(id),
       }))
       .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   },

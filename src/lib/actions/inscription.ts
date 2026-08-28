@@ -89,17 +89,17 @@ export async function sinscrire(
     if (eDept || !dept)
       return { erreur: "Création du département impossible." };
 
-    // Cumul Responsable + Star : le rôle star est rattaché au département créé.
+    // Cumul Responsable + Star : demande auto-validée sur le département créé.
     if (p.roles.includes("star")) {
-      await supabase
-        .from("roles_utilisateurs")
-        .update({ departement_id: dept.id })
-        .eq("utilisateur_id", userId)
-        .eq("role", "star");
+      await supabase.from("demandes_departement").insert({
+        star_id: userId,
+        departement_id: dept.id,
+        statut: "valide",
+      });
     }
   }
 
   if (p.roles.includes("responsable")) redirect("/bienvenue");
-  // Star seul : il choisit d'abord son département cible.
+  // Star seul : il choisit ensuite un ou plusieurs départements.
   redirect("/choisir-departement");
 }

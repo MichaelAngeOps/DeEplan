@@ -24,14 +24,25 @@ Pas de trigger `auth.users` → `public.utilisateurs` : **l'app crée la ligne**
 | `utilisateur_id` | uuid → utilisateurs | |
 | `role` | text | CHECK `('responsable','star')` |
 | `statut` | text | CHECK `('en_attente','valide','desactive')`, default `en_attente` |
-| `departement_id` | uuid → departements **nullable** (migration `20260828201350`, Lot A2) | département cible choisi par le star à l'inscription (avant validation) |
 | `date_creation` | timestamptz | |
 
-**Unique** `(utilisateur_id, role)`. Le rôle `desactive` sert de **soft-delete** (décision produit #6).
+**Unique** `(utilisateur_id, role)`. Pour le rôle **star**, `statut` est un
+**cache dérivé** de `demandes_departement`, synchronisé par le trigger
+`trg_sync_statut_role_star` : `valide` si ≥1 demande `valide` · `en_attente` si
+≥1 `en_attente` · sinon `desactive`.
 
-**Trigger** `trg_notifier_stars_sans_departement` : `AFTER INSERT ON departements` →
-crée une notification `departement_cree` pour chaque star `en_attente` sans
-`departement_id` (fonction `notifier_stars_sans_departement`, SECURITY DEFINER).
+### `demandes_departement` (Lot A2-bis — migration `20260828204806`)
+PK composite `(star_id, departement_id)`. `star_id` → utilisateurs, `departement_id`
+→ departements (les deux `ON DELETE CASCADE`). `statut` CHECK
+`('en_attente','valide','refuse')`, default `en_attente`. `date_demande` timestamptz.
+
+Un star peut demander à rejoindre **plusieurs départements** ; chaque responsable
+valide/refuse **la sienne** indépendamment.
+
+**Triggers** :
+- `trg_sync_statut_role_star` (`demandes_departement` → `roles_utilisateurs.statut`).
+- `notifier_stars_sans_departement` (`AFTER INSERT ON departements`) → notif
+  `departement_cree` aux stars sans **aucune** demande.
 
 ### `departements`
 `id` PK · `nom` text · `description` text nullable · `responsable_id` uuid → utilisateurs.
@@ -89,8 +100,9 @@ Index `(utilisateur_id, lu)`.
 | Table | Lecture | Écriture |
 |---|---|---|
 | `utilisateurs` | sa propre ligne ; **responsable** voit les stars de **son** département (rattachés à une section, ou `en_attente` ayant choisi son dept — migration `20260828201350`) | insert/update sa propre ligne |
-| `roles_utilisateurs` | ses propres rôles ; responsable voit/valide les rôles `star` de **son** département | insert son propre rôle (`statut='en_attente'` forcé) ; **star** renseigne `departement_id` tant qu'il est `en_attente` ; responsable valide un rôle `star` de son dept |
-| `departements` | responsable ou star membre ; **tout utilisateur connecté** peut lister (sélecteur d'inscription — migration `20260828201350`) | responsable crée/modifie le sien (`responsable_id = auth.uid()`) |
+| `roles_utilisateurs` | ses propres rôles ; responsable voit/valide les rôles `star` de **son** département (via `demandes_departement`) | insert son propre rôle (`statut='en_attente'` forcé) |
+| `demandes_departement` | le star les siennes ; le responsable celles de son département | le star crée les siennes (`statut='en_attente'` forcé) ; le responsable valide/refuse les siennes |
+| `departements` | responsable ou star membre ; **tout utilisateur connecté** peut lister (sélecteur d'inscription) | responsable crée/modifie le sien (`responsable_id = auth.uid()`) |
 | `sections`, `postes` | membre du département | responsable du département (ALL) |
 | `star_sections` | le star concerné, ou le responsable du département | responsable du département (ALL) |
 | `disponibilites` | le star ; le responsable des sections du star | le star gère les siennes (`star_id = auth.uid()`) |
@@ -114,10 +126,11 @@ Index `(utilisateur_id, lu)`.
 4. ✅ **CORRIGÉ** (migration `20260828…durcir_rls_roles_et_search_path`) — la
    policy INSERT de `roles_utilisateurs` impose maintenant
    `statut = 'en_attente'`. Un compte ne peut plus s'auto-valider.
-5. ✅ **CORRIGÉ** (migration `20260828201350`, Lot A2) — `roles_utilisateurs` /
-   `utilisateurs` sont désormais **scopées au département** : un responsable ne
-   voit/valide que les stars rattachés à une de ses sections OU en attente ayant
-   choisi son département. Fin du « v1 » permissif pour ce cas.
+5. ✅ **CORRIGÉ** (migrations `20260828201350` puis `20260828204806`, Lot A2 /
+   A2-bis) — `roles_utilisateurs` / `utilisateurs` / `demandes_departement` sont
+   **scopées au département** : un responsable ne voit/traite que les stars ayant
+   une demande pour **son** département. Fin du « v1 » permissif.
+   Le star est **multi-département** (table `demandes_departement`).
 6. ✅ **CORRIGÉ** (même migration) — `search_path` des 3 fonctions RLS figé à `''`
    + tables schéma-qualifiées.
 7. **Restant (WARN, non bloquant, ACCEPTÉ)** : advisor

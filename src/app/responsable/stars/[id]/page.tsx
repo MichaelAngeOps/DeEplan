@@ -45,16 +45,10 @@ export default async function FicheStarPage({
           <p className="mt-0.5 text-caption text-ink-48">{fiche.email}</p>
           <p className="mt-0.5 text-fine text-ink-48">
             {fiche.sections.join(", ") || "Aucune section"} ·{" "}
-            {fiche.statut === "valide"
-              ? "Actif"
-              : fiche.statut === "desactive"
-                ? "Désactivé"
-                : "En attente"}
+            {fiche.statut === "valide" ? "Actif dans ce département" : "Retiré de ce département"}
           </p>
         </div>
-        {fiche.statut !== "en_attente" && (
-          <FicheStarActions starId={fiche.id} actif={fiche.statut === "valide"} />
-        )}
+        <FicheStarActions starId={fiche.id} actif={fiche.statut === "valide"} />
       </div>
 
       <div className="mt-7 grid gap-5 md:grid-cols-2">

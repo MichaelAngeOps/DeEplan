@@ -95,16 +95,10 @@ export function AnnuaireClient({ stars }: { stars: StarAnnuaire[] }) {
                         "inline-flex rounded-pill px-2 py-0.5 text-[10.5px] font-semibold",
                         s.statut === "valide"
                           ? "bg-success/10 text-success"
-                          : s.statut === "desactive"
-                            ? "bg-danger/10 text-danger"
-                            : "bg-warning/10 text-warning",
+                          : "bg-danger/10 text-danger",
                       )}
                     >
-                      {s.statut === "valide"
-                        ? "Actif"
-                        : s.statut === "desactive"
-                          ? "Désactivé"
-                          : "En attente"}
+                      {s.statut === "valide" ? "Actif" : "Retiré"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right text-[13px] text-ink">

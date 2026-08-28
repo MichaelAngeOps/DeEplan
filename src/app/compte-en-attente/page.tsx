@@ -15,13 +15,28 @@ export default async function CompteEnAttentePage() {
     redirect("/apres-login");
   }
 
-  const refuse = acces.star?.statut === "desactive";
-  const sansDepartement = !refuse && !acces.star?.departementChoisi;
+  const demandes = acces.star?.departements ?? [];
+  const enAttente = demandes.filter((d) => d.statut === "en_attente");
+  const toutesRefusees =
+    demandes.length > 0 && demandes.every((d) => d.statut === "refuse");
+  const aucuneDemande = demandes.length === 0;
 
-  // Star sans département : y a-t-il des départements à rejoindre ?
+  const supabase = await createClient();
+
+  // Noms des départements en attente + nombre de départements existants.
+  let nomsEnAttente: string[] = [];
+  if (enAttente.length > 0) {
+    const { data } = await supabase
+      .from("departements")
+      .select("nom")
+      .in(
+        "id",
+        enAttente.map((d) => d.id),
+      );
+    nomsEnAttente = (data ?? []).map((d) => d.nom);
+  }
   let departementsExistent = false;
-  if (sansDepartement) {
-    const supabase = await createClient();
+  if (aucuneDemande) {
     const { count } = await supabase
       .from("departements")
       .select("*", { count: "exact", head: true });
@@ -29,9 +44,10 @@ export default async function CompteEnAttentePage() {
   }
 
   const { icone, titre, texte } = contenu({
-    refuse,
-    sansDepartement,
+    toutesRefusees,
+    aucuneDemande,
     departementsExistent,
+    nomsEnAttente,
   });
 
   return (
@@ -45,7 +61,7 @@ export default async function CompteEnAttentePage() {
         </h1>
         <p className="text-caption text-ink-80">{texte}</p>
 
-        {sansDepartement && departementsExistent && (
+        {aucuneDemande && departementsExistent && (
           <Link
             href="/choisir-departement"
             className="mt-2 rounded-pill bg-accent px-5 py-2.5 text-[13px] font-semibold text-white"
@@ -68,29 +84,31 @@ export default async function CompteEnAttentePage() {
 }
 
 function contenu({
-  refuse,
-  sansDepartement,
+  toutesRefusees,
+  aucuneDemande,
   departementsExistent,
+  nomsEnAttente,
 }: {
-  refuse: boolean;
-  sansDepartement: boolean;
+  toutesRefusees: boolean;
+  aucuneDemande: boolean;
   departementsExistent: boolean;
+  nomsEnAttente: string[];
 }) {
-  if (refuse)
+  if (toutesRefusees)
     return {
       icone: <Ban size={24} className="text-danger" />,
       titre: "Compte non validé",
       texte:
-        "Votre inscription n'a pas été retenue par un responsable. Contactez votre responsable si vous pensez qu'il s'agit d'une erreur.",
+        "Aucune de vos demandes n'a été retenue. Contactez le responsable concerné si vous pensez qu'il s'agit d'une erreur.",
     };
-  if (sansDepartement && !departementsExistent)
+  if (aucuneDemande && !departementsExistent)
     return {
       icone: <Building2 size={24} className="text-accent" />,
       titre: "Aucun département actif",
       texte:
         "Aucun département n'est encore créé. Vous serez notifié dès qu'un département sera disponible et pourrez alors le rejoindre.",
     };
-  if (sansDepartement)
+  if (aucuneDemande)
     return {
       icone: <Building2 size={24} className="text-accent" />,
       titre: "Choisissez votre département",
@@ -99,8 +117,10 @@ function contenu({
     };
   return {
     icone: <Clock size={24} className="text-accent" />,
-    titre: "Compte en attente de validation",
+    titre: "Demande en attente de validation",
     texte:
-      "Votre inscription doit être validée par le responsable de votre département, qui vous affectera à une ou plusieurs sections. Vous recevrez l'accès dès la confirmation.",
+      nomsEnAttente.length > 0
+        ? `Votre demande est en attente de validation par le responsable de : ${nomsEnAttente.join(", ")}. Vous recevrez l'accès dès la confirmation.`
+        : "Votre demande est en attente de validation. Vous recevrez l'accès dès la confirmation.",
   };
 }
