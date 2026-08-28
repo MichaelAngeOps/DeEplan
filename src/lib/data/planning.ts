@@ -43,7 +43,32 @@ export const getPlanningMois = cache(
         statut: r.statut as StatutShift,
         heureDebut: r.heure_debut,
         heureFin: r.heure_fin,
+        conflit: false,
       };
+    }
+
+    // Conflits dispo/planning : star déclaré indisponible un jour où il est
+    // planifié (prompt §8). `plannings` × `disponibilites` sans FK commune →
+    // jointure applicative sur `(star_id, date)`.
+    const shifts = data ?? [];
+    if (shifts.length > 0) {
+      const starIds = [...new Set(shifts.map((r) => r.star_id))];
+      const dates = [...new Set(shifts.map((r) => r.date))];
+      const { data: indispo } = await supabase
+        .from("disponibilites")
+        .select("star_id, date")
+        .eq("statut", "indisponible")
+        .in("star_id", starIds)
+        .in("date", dates);
+      const enConflit = new Set(
+        (indispo ?? []).map((d) => `${d.star_id}_${d.date}`),
+      );
+      for (const r of shifts) {
+        if (enConflit.has(`${r.star_id}_${r.date}`)) {
+          const c = cases[cleCase(r.poste_id, r.date)];
+          if (c) c.conflit = true;
+        }
+      }
     }
 
     return { sections, cases };

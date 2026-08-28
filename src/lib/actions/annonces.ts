@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAcces, getUser } from "@/lib/auth";
+import { notifierPlusieurs } from "@/lib/notify";
 import { createClient } from "@/lib/supabase/server";
 
 const PATH_R = "/responsable/annonces";
@@ -59,6 +60,22 @@ export async function creerAnnonce(
     contenu: contenu.trim(),
   });
   if (error) return { ok: false, erreur: "Publication impossible. Réessayez." };
+
+  // Notifie chaque star du département (best-effort).
+  const { data: secs } = await supabase
+    .from("sections")
+    .select("id")
+    .eq("departement_id", g.departementId);
+  const { data: liens } = await supabase
+    .from("star_sections")
+    .select("star_id")
+    .in("section_id", (secs ?? []).map((s) => s.id));
+  const starIds = [...new Set((liens ?? []).map((l) => l.star_id))];
+  await notifierPlusieurs(
+    starIds,
+    "annonce",
+    `Nouvelle annonce : « ${propre(titre)} »`,
+  );
 
   revalider();
   return { ok: true };

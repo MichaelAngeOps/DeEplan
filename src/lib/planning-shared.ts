@@ -10,6 +10,8 @@ export interface ShiftCase {
   statut: StatutShift;
   heureDebut: string | null;
   heureFin: string | null;
+  /** Le star s'est déclaré **indisponible** ce jour-là (conflit dispo/planning). */
+  conflit: boolean;
 }
 
 export interface PlanningMois {

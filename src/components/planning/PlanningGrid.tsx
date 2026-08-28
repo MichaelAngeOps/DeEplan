@@ -169,11 +169,16 @@ function SectionRows({
                         (shift.starNom ?? "Star retiré") +
                         (shift.heureDebut && shift.heureFin
                           ? ` · ${shift.heureDebut.slice(0, 5)}–${shift.heureFin.slice(0, 5)}`
+                          : "") +
+                        (shift.conflit
+                          ? " · ⚠ indisponible ce jour"
                           : "")
                       }
                       className={cn(
                         "inline-flex h-6 w-6 items-center justify-center rounded-xs text-[10.5px] font-semibold",
-                        CHIP[shift.statut],
+                        shift.conflit
+                          ? "bg-warning/25 text-warning ring-1 ring-warning"
+                          : CHIP[shift.statut],
                       )}
                     >
                       {shift.starNom ? initials(shift.starNom) : "?"}

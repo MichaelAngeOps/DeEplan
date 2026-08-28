@@ -5,7 +5,8 @@ export type TypeNotification =
   | "compte_valide"
   | "shift_assigne"
   | "shift_modifie"
-  | "shift_retire";
+  | "shift_retire"
+  | "annonce";
 
 /**
  * Crée une notification pour un utilisateur. **Best-effort** : une notification
@@ -22,6 +23,29 @@ export async function notifier(
     await supabase
       .from("notifications")
       .insert({ utilisateur_id: utilisateurId, type, contenu });
+  } catch {
+    // ignoré
+  }
+}
+
+/** Notifie en lot plusieurs utilisateurs (même type / contenu). Best-effort. */
+export async function notifierPlusieurs(
+  utilisateurIds: string[],
+  type: TypeNotification,
+  contenu: string,
+): Promise<void> {
+  if (utilisateurIds.length === 0) return;
+  try {
+    const supabase = await createClient();
+    await supabase
+      .from("notifications")
+      .insert(
+        utilisateurIds.map((utilisateur_id) => ({
+          utilisateur_id,
+          type,
+          contenu,
+        })),
+      );
   } catch {
     // ignoré
   }

@@ -5,6 +5,7 @@ import {
   Bell,
   Briefcase,
   CalendarX,
+  Megaphone,
   PartyPopper,
   Pencil,
 } from "lucide-react";
@@ -18,6 +19,7 @@ const ICONE: Record<string, ReactNode> = {
   shift_assigne: <Briefcase size={15} className="text-accent" />,
   shift_modifie: <Pencil size={15} className="text-accent" />,
   shift_retire: <CalendarX size={15} className="text-accent" />,
+  annonce: <Megaphone size={15} className="text-accent" />,
 };
 
 function dateLisible(iso: string): string {

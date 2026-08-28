@@ -100,6 +100,11 @@ export function AssignationModal({
     >
       {mode === "apercu" && cellule.shift && (
         <div className="mt-3">
+          {cellule.shift.conflit && (
+            <p className="mb-3 rounded-md border border-warning/60 bg-warning/10 px-3 py-2 text-fine text-warning">
+              ⚠ Ce star s&apos;est déclaré indisponible ce jour-là.
+            </p>
+          )}
           <div className="flex items-center gap-3 border-b border-hairline pb-4">
             <Avatar name={cellule.shift.starNom ?? "?"} size="sm" />
             <div>
