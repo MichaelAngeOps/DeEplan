@@ -15,7 +15,12 @@ export interface Acces {
   estResponsable: boolean;
   departementId: string | null;
   /** Rôle « star » si présent (quel que soit son statut), sinon `null`. */
-  star: { statut: StatutRole; sectionIds: string[] } | null;
+  star: {
+    statut: StatutRole;
+    sectionIds: string[];
+    /** Département choisi à l'inscription (avant validation), ou `null`. */
+    departementChoisi: string | null;
+  } | null;
 }
 
 /**
@@ -54,7 +59,7 @@ export const getAcces = cache(async (): Promise<Acces | null> => {
     supabase.from("departements").select("id").eq("responsable_id", user.id),
     supabase
       .from("roles_utilisateurs")
-      .select("role, statut")
+      .select("role, statut, departement_id")
       .eq("utilisateur_id", user.id),
     supabase.from("star_sections").select("section_id").eq("star_id", user.id),
   ]);
@@ -68,30 +73,10 @@ export const getAcces = cache(async (): Promise<Acces | null> => {
       ? {
           statut: roleStar.statut as StatutRole,
           sectionIds: (sections.data ?? []).map((s) => s.section_id),
+          departementChoisi: roleStar.departement_id ?? null,
         }
       : null,
   };
-});
-
-/**
- * Département de l'utilisateur courant : celui qu'il dirige (responsable) ou
- * celui de ses sections (star). `null` si aucun.
- */
-export const getDepartementId = cache(async (): Promise<string | null> => {
-  const acces = await getAcces();
-  if (!acces) return null;
-  if (acces.departementId) return acces.departementId;
-  if (acces.star && acces.star.sectionIds.length > 0) {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("sections")
-      .select("departement_id")
-      .in("id", acces.star.sectionIds)
-      .limit(1)
-      .maybeSingle();
-    return data?.departement_id ?? null;
-  }
-  return null;
 });
 
 /** Destination par défaut selon les droits (utilisé après login). */

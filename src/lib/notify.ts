@@ -6,7 +6,8 @@ export type TypeNotification =
   | "shift_assigne"
   | "shift_modifie"
   | "shift_retire"
-  | "annonce";
+  | "annonce"
+  | "departement_cree";
 
 /**
  * Crée une notification pour un utilisateur. **Best-effort** : une notification

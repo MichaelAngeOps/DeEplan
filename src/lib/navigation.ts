@@ -31,6 +31,5 @@ export const RESPONSABLE_NAV: NavEntry[] = [
 export const STAR_NAV: NavEntry[] = [
   { href: "/star/calendrier", label: "Mon calendrier", shortLabel: "Calendrier", icon: CalendarDays },
   { href: "/star/disponibilites", label: "Mes disponibilités", shortLabel: "Dispos", icon: Clock },
-  { href: "/star/annonces", label: "Annonces", shortLabel: "Annonces", icon: Megaphone },
   { href: "/star/notifications", label: "Notifications", shortLabel: "Notifs", icon: Bell },
 ];

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import {
   Bell,
   Briefcase,
+  Building2,
   CalendarX,
   Megaphone,
   PartyPopper,
@@ -20,6 +21,7 @@ const ICONE: Record<string, ReactNode> = {
   shift_modifie: <Pencil size={15} className="text-accent" />,
   shift_retire: <CalendarX size={15} className="text-accent" />,
   annonce: <Megaphone size={15} className="text-accent" />,
+  departement_cree: <Building2 size={15} className="text-accent" />,
 };
 
 function dateLisible(iso: string): string {
@@ -84,7 +86,7 @@ export function NotificationsClient({
             <div className="flex-1">
               <p
                 className={cn(
-                  "text-caption leading-relaxed text-ink",
+                  "whitespace-pre-wrap text-caption leading-relaxed text-ink",
                   !n.lu && "font-semibold",
                 )}
               >

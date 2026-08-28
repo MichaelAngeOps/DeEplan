@@ -6,7 +6,6 @@ import { notifierPlusieurs } from "@/lib/notify";
 import { createClient } from "@/lib/supabase/server";
 
 const PATH_R = "/responsable/annonces";
-const PATH_S = "/star/annonces";
 const TITRE_MAX = 120;
 const CONTENU_MAX = 5000;
 
@@ -37,7 +36,8 @@ async function garde(): Promise<
 
 function revalider() {
   revalidatePath(PATH_R);
-  revalidatePath(PATH_S);
+  revalidatePath("/star/notifications");
+  revalidatePath("/star", "layout"); // pastille de nav
 }
 
 export async function creerAnnonce(
@@ -71,10 +71,12 @@ export async function creerAnnonce(
     .select("star_id")
     .in("section_id", (secs ?? []).map((s) => s.id));
   const starIds = [...new Set((liens ?? []).map((l) => l.star_id))];
+  // Notification autonome : titre + contenu complet (il n'y a plus d'écran
+  // « Annonces » côté Star, tout passe par les notifications).
   await notifierPlusieurs(
     starIds,
     "annonce",
-    `Nouvelle annonce : « ${propre(titre)} »`,
+    `📣 ${propre(titre)}\n\n${contenu.trim()}`,
   );
 
   revalider();
