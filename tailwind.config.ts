@@ -51,6 +51,12 @@ const config: Config = {
       hairline: "#e2e2e6",
       "divider-soft": "rgba(0, 0, 0, 0.06)",
       "chip-translucent": "rgba(210, 210, 215, 0.64)",
+
+      // Couleurs de statut — utilisées en dur dans la maquette (hors
+      // colors_and_type.css), rapatriées ici comme tokens.
+      success: "#2e7d32", // "A servi", disponible
+      danger: "#c0392b", // "N'a pas servi", indisponible, actions destructrices
+      warning: "#b7791f", // "À confirmer"
     },
 
     borderRadius: {

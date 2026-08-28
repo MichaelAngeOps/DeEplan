@@ -37,6 +37,11 @@
   --hairline:          #e2e2e6;              /* 1px card / chip border           */
   --chip-translucent:  rgba(210, 210, 215, 0.64); /* control chip over photos    */
 
+  /* Couleurs de statut (utilisées en dur dans la maquette, hors design system) */
+  --success:           #2e7d32;   /* "A servi", disponible                       */
+  --danger:            #c0392b;   /* "N'a pas servi", indisponible, destructif   */
+  --warning:           #b7791f;   /* "À confirmer"                               */
+
   /* ----------------------------------------------------------------------
      COLOR — SEMANTIC ALIASES (prefer these in product code)
      ---------------------------------------------------------------------- */
