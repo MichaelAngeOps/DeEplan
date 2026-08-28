@@ -7,3 +7,4 @@ export {
 } from "./ResponsableShell";
 export { StarShell, type StarShellProps } from "./StarShell";
 export { AuthShell, type AuthShellProps } from "./AuthShell";
+export { DeconnexionButton } from "./DeconnexionButton";

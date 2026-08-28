@@ -1,19 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { env } from "@/lib/env";
+import type { Database } from "@/types/supabase";
 
 /**
  * Client Supabase côté serveur (Server Components, Route Handlers, Server Actions).
  *
- * Note : le `setAll` peut échouer quand il est appelé depuis un Server Component
- * (les cookies y sont en lecture seule) — c'est sans conséquence tant qu'un
- * middleware rafraîchit la session à chaque navigation. Le middleware sera mis
- * en place avec le lot « Authentification » (prompt §9).
+ * Le `setAll` peut échouer depuis un Server Component (cookies en lecture seule) —
+ * sans conséquence tant que le middleware rafraîchit la session à chaque navigation
+ * (`src/middleware.ts`).
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
+  return createServerClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -24,7 +24,7 @@ export async function createClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // Appelé depuis un Server Component : ignoré (voir note ci-dessus).
+          // Server Component : ignoré (le middleware s'en charge).
         }
       },
     },

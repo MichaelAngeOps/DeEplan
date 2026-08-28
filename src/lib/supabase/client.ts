@@ -2,12 +2,12 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import { env } from "@/lib/env";
+import type { Database } from "@/types/supabase";
 
 /**
  * Client Supabase côté navigateur (Client Components).
- * Pour les Server Components / Route Handlers / Middleware, utiliser
- * `@/lib/supabase/server` à la place.
+ * Pour le serveur : `@/lib/supabase/server`.
  */
 export function createClient() {
-  return createBrowserClient(env.supabaseUrl, env.supabaseAnonKey);
+  return createBrowserClient<Database>(env.supabaseUrl, env.supabaseAnonKey);
 }
