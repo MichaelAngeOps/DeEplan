@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./colors_and_type.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-alt); }
+    ::-webkit-scrollbar { height: 10px; width: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 6px; }
+    table { border-collapse: collapse; }
+  </style>
+</helmet>
+
+<sc-if value="{{ isAuthFlow }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;background:var(--bg-alt);display:flex;flex-direction:column;align-items:center;padding:40px 20px;font-family:var(--font-text);color:var(--ink)">
+  <div style="font:600 12px var(--font-text);color:var(--fg-muted);letter-spacing:-0.1px;margin-bottom:20px">Aperçu du parcours de connexion</div>
+  <div style="display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-pill);padding:4px;margin-bottom:28px">
+    <button onClick="{{ auth.toggleDesktop }}" style="border:none;border-radius:var(--r-pill);padding:8px 18px;font:600 12.5px var(--font-text);cursor:pointer;background:{{ auth.desktopBg }};color:{{ auth.desktopColor }}">Desktop</button>
+    <button onClick="{{ auth.toggleMobile }}" style="border:none;border-radius:var(--r-pill);padding:8px 18px;font:600 12.5px var(--font-text);cursor:pointer;background:{{ auth.mobileBg }};color:{{ auth.mobileColor }}">Mobile</button>
+  </div>
+
+  <div style="width:{{ auth.frameWidth }};border:{{ auth.frameBorder }};border-radius:{{ auth.frameRadius }};background:var(--bg);overflow:hidden">
+    <sc-if value="{{ auth.isMobile }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--tile-1)">
+        <span style="font:600 11px var(--font-text);color:var(--on-dark)">9:41</span>
+        <div style="display:flex;gap:6px"><i data-lucide="wifi" style="width:12px;height:12px;color:var(--on-dark)"></i><i data-lucide="battery-full" style="width:14px;height:14px;color:var(--on-dark)"></i></div>
+      </div>
+    </sc-if>
+
+    <div style="padding:{{ auth.framePadding }}">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="text-align:center;padding:8px 0 4px">
+          <img src="./mark.svg" alt="DeEplan" style="width:44px;height:44px;margin:0 auto 18px;display:block" />
+          <h1 style="font:600 24px var(--font-display);letter-spacing:-0.4px;margin:0 0 8px">DeEplan</h1>
+          <p style="font:400 14px var(--font-text);color:var(--accent);margin:0 0 20px">Le planning d'équipe, simplifié.</p>
+          <p style="font:400 13.5px/1.55 var(--font-text);color:var(--ink-80);margin:0 0 32px">DeEplan permet à un responsable de planifier les shifts de son équipe chaque mois, poste par poste. Les stars soumettent leurs disponibilités et consultent leur planning en temps réel, où qu'elles soient.</p>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <button onClick="{{ goLogin }}" style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:13px;font:600 14px var(--font-text);cursor:pointer">Se connecter</button>
+            <button onClick="{{ goAccountType }}" style="width:100%;border:1px solid var(--border);background:var(--pearl);color:var(--ink-80);border-radius:var(--r-pill);padding:13px;font:600 14px var(--font-text);cursor:pointer">Créer un compte</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goHome }}" style="display:flex;align-items:center;gap:6px;color:var(--fg-muted);cursor:pointer;margin-bottom:20px;font:600 12px var(--font-text)"><i data-lucide="chevron-left" style="width:14px;height:14px"></i>Retour à l'accueil</div>
+        <h2 style="font:600 22px var(--font-display);letter-spacing:-0.3px;margin:0 0 4px">Connexion</h2>
+        <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:0 0 24px">Accédez à votre espace Responsable ou Star.</p>
+        <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Email</label>
+        <input type="email" placeholder="vous@exemple.com" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:16px" />
+        <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Mot de passe</label>
+        <input type="password" placeholder="••••••••" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:24px" />
+        <button style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:12px;font:600 13.5px var(--font-text);cursor:pointer;margin-bottom:12px">Se connecter</button>
+        <p style="text-align:center;font:400 12.5px var(--font-text);color:var(--fg-muted);margin:0 0 18px"><a onClick="{{ goForgotPassword }}" style="color:var(--accent);font-weight:600;cursor:pointer">Mot de passe oublié ?</a></p>
+        <p style="text-align:center;font:400 13px var(--font-text);color:var(--fg-muted);margin:0 0 10px">Pas encore de compte ? <a onClick="{{ goAccountType }}" style="color:var(--accent);font-weight:600;cursor:pointer">Créer un compte</a></p>
+        <p style="text-align:center;font:400 12px var(--font-text);color:var(--fg-muted);margin:0">Compte avec les deux rôles validés ? <a onClick="{{ goRoleSelector }}" style="color:var(--accent);font-weight:600;cursor:pointer">Démo sélecteur de rôle</a></p>
+      </sc-if>
+
+      <sc-if value="{{ isForgotPassword }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goLogin }}" style="display:flex;align-items:center;gap:6px;color:var(--fg-muted);cursor:pointer;margin-bottom:20px;font:600 12px var(--font-text)"><i data-lucide="chevron-left" style="width:14px;height:14px"></i>Retour à la connexion</div>
+        <sc-if value="{{ forgotPasswordSent }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:12px 0 4px">
+            <div style="width:52px;height:52px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><i data-lucide="mail-check" style="width:24px;height:24px;color:var(--accent)"></i></div>
+            <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 10px">Email envoyé</h2>
+            <p style="font:400 13.5px/1.5 var(--font-text);color:var(--ink-80);margin:0 0 24px">Un email a été envoyé à {{ forgotPasswordEmail }} avec les instructions pour réinitialiser votre mot de passe.</p>
+            <a onClick="{{ goLogin }}" style="color:var(--accent);font-weight:600;font:600 13px var(--font-text);cursor:pointer">Retour à la connexion</a>
+          </div>
+        </sc-if>
+        <sc-if value="{{ forgotPasswordSent }}" hint-placeholder-val="{{ false }}"></sc-if>
+        <sc-if value="{{ isForgotPasswordForm }}" hint-placeholder-val="{{ true }}">
+          <h2 style="font:600 22px var(--font-display);letter-spacing:-0.3px;margin:0 0 4px">Réinitialiser votre mot de passe</h2>
+          <p style="font:400 13px/1.5 var(--font-text);color:var(--fg-muted);margin:0 0 24px">Indiquez votre email, nous vous envoyons un lien pour créer un nouveau mot de passe.</p>
+          <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Email</label>
+          <input type="email" value="{{ forgotPasswordEmail }}" onChange="{{ setForgotPasswordEmail }}" placeholder="vous@exemple.com" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:24px" />
+          <button onClick="{{ sendResetLink }}" style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:12px;font:600 13.5px var(--font-text);cursor:pointer">Envoyer le lien de réinitialisation</button>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ isRoleSelector }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goLogin }}" style="display:flex;align-items:center;gap:6px;color:var(--fg-muted);cursor:pointer;margin-bottom:20px;font:600 12px var(--font-text)"><i data-lucide="chevron-left" style="width:14px;height:14px"></i>Retour à la connexion</div>
+        <h2 style="font:600 22px var(--font-display);letter-spacing:-0.3px;margin:0 0 4px">Continuer en tant que</h2>
+        <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:0 0 24px">Vos deux rôles sont validés. Choisissez l'espace à ouvrir.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <button onClick="{{ continueAsResponsable }}" style="display:flex;align-items:center;gap:14px;border:1px solid var(--border);background:var(--bg);border-radius:var(--r-lg);padding:18px;cursor:pointer;text-align:left">
+            <div style="width:38px;height:38px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;flex:none"><i data-lucide="briefcase" style="width:18px;height:18px;color:var(--accent)"></i></div>
+            <div style="flex:1"><div style="font:600 14.5px var(--font-text)">Continuer en tant que Responsable</div></div>
+            <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--fg-muted)"></i>
+          </button>
+          <button onClick="{{ continueAsStar }}" style="display:flex;align-items:center;gap:14px;border:1px solid var(--border);background:var(--bg);border-radius:var(--r-lg);padding:18px;cursor:pointer;text-align:left">
+            <div style="width:38px;height:38px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;flex:none"><i data-lucide="star" style="width:18px;height:18px;color:var(--accent)"></i></div>
+            <div style="flex:1"><div style="font:600 14.5px var(--font-text)">Continuer en tant que Star</div></div>
+            <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--fg-muted)"></i>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAccountType }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goLogin }}" style="display:flex;align-items:center;gap:6px;color:var(--fg-muted);cursor:pointer;margin-bottom:20px;font:600 12px var(--font-text)"><i data-lucide="chevron-left" style="width:14px;height:14px"></i>Retour à la connexion</div>
+        <h2 style="font:600 22px var(--font-display);letter-spacing:-0.3px;margin:0 0 4px">Créer un compte</h2>
+        <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:0 0 24px">Sélectionnez un ou plusieurs rôles.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+          <label style="display:flex;align-items:center;gap:14px;border:1px solid {{ roleManagerBorder }};background:{{ roleManagerBg }};border-radius:var(--r-lg);padding:18px;cursor:pointer">
+            <input type="checkbox" checked="{{ signupRoles.manager }}" onChange="{{ toggleRoleManager }}" style="accent-color:var(--accent);width:18px;height:18px;flex:none" />
+            <div style="width:38px;height:38px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;flex:none"><i data-lucide="briefcase" style="width:18px;height:18px;color:var(--accent)"></i></div>
+            <div style="flex:1"><div style="font:600 14.5px var(--font-text)">Je suis Responsable</div><div style="font:400 12px var(--font-text);color:var(--fg-muted)">Je gère un département et planifie les équipes</div></div>
+          </label>
+          <label style="display:flex;align-items:center;gap:14px;border:1px solid {{ roleStarBorder }};background:{{ roleStarBg }};border-radius:var(--r-lg);padding:18px;cursor:pointer">
+            <input type="checkbox" checked="{{ signupRoles.star }}" onChange="{{ toggleRoleStar }}" style="accent-color:var(--accent);width:18px;height:18px;flex:none" />
+            <div style="width:38px;height:38px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;flex:none"><i data-lucide="star" style="width:18px;height:18px;color:var(--accent)"></i></div>
+            <div style="flex:1"><div style="font:600 14.5px var(--font-text)">Je suis Star</div><div style="font:400 12px var(--font-text);color:var(--fg-muted)">Je soumets mes disponibilités et consulte mon planning</div></div>
+          </label>
+        </div>
+        <button onClick="{{ goSignupIdentity }}" disabled="{{ noRoleSelected }}" style="width:100%;border:none;background:{{ continueBg }};color:#fff;border-radius:var(--r-pill);padding:12px;font:600 13.5px var(--font-text);cursor:pointer">Continuer</button>
+      </sc-if>
+
+      <sc-if value="{{ isSignupIdentity }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goAccountType }}" style="display:flex;align-items:center;gap:6px;color:var(--fg-muted);cursor:pointer;margin-bottom:20px;font:600 12px var(--font-text)"><i data-lucide="chevron-left" style="width:14px;height:14px"></i>Retour au choix du profil</div>
+        <h2 style="font:600 22px var(--font-display);letter-spacing:-0.3px;margin:0 0 4px">Créer un compte</h2>
+        <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:0 0 20px">{{ signupRoleSummary }}</p>
+        <div style="display:flex;gap:12px;margin-bottom:16px">
+          <div style="flex:1"><label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Prénom</label><input placeholder="Prénom" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text)" /></div>
+          <div style="flex:1"><label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Nom</label><input placeholder="Nom" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text)" /></div>
+        </div>
+        <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Email</label>
+        <input type="email" placeholder="vous@exemple.com" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:16px" />
+        <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Mot de passe</label>
+        <input type="password" placeholder="••••••••" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:20px" />
+
+        <sc-if value="{{ signupRoles.manager }}" hint-placeholder-val="{{ false }}">
+          <div style="border-top:1px solid var(--border);padding-top:18px;margin-bottom:20px">
+            <div style="font:600 13px var(--font-text);margin-bottom:14px">Votre département</div>
+            <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Nom du département</label>
+            <input placeholder="Ex : Le Comptoir" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:16px" />
+            <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Description</label>
+            <textarea placeholder="Décrivez votre département en quelques mots" rows="3" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);resize:none;font-family:var(--font-text)"></textarea>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ signupRoles.star }}" hint-placeholder-val="{{ false }}">
+          <div style="border-top:1px solid var(--border);padding-top:18px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start">
+            <i data-lucide="info" style="width:16px;height:16px;color:var(--accent);flex:none;margin-top:1px"></i>
+            <p style="font:400 12.5px/1.5 var(--font-text);color:var(--fg-muted);margin:0">Votre rôle Star sera soumis à validation par un responsable une fois le compte créé.</p>
+          </div>
+        </sc-if>
+
+        <button onClick="{{ createAccount }}" style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:12px;font:600 13.5px var(--font-text);cursor:pointer">Créer mon compte</button>
+      </sc-if>
+
+      <sc-if value="{{ isPendingValidation }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:12px 0 4px">
+          <div style="width:52px;height:52px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><i data-lucide="clock" style="width:24px;height:24px;color:var(--accent)"></i></div>
+          <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 10px">Compte en attente de validation</h2>
+          <p style="font:400 13.5px/1.5 var(--font-text);color:var(--ink-80);margin:0 0 12px">Votre compte est en attente de validation par votre responsable. Vous recevrez un accès dès qu'il aura confirmé votre inscription.</p>
+          <p style="font:400 12px var(--font-text);color:var(--fg-muted);margin:0 0 28px">Aucun accès à l'application n'est possible pour le moment.</p>
+          <div onClick="{{ goWelcome }}" style="font:600 12.5px var(--font-text);color:var(--accent);cursor:pointer;margin-bottom:14px">Simuler la validation (démo) →</div>
+          <div onClick="{{ goLogin }}" style="font:400 12.5px var(--font-text);color:var(--fg-muted);cursor:pointer">Se déconnecter</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:12px 0 4px">
+          <div style="width:52px;height:52px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><i data-lucide="party-popper" style="width:24px;height:24px;color:var(--accent)"></i></div>
+          <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 10px">Bienvenue dans le département Le Comptoir</h2>
+          <p style="font:400 13.5px/1.5 var(--font-text);color:var(--ink-80);margin:0 0 28px">Un espace où chaque star trouve sa place, entre accueil, restauration, logistique et sécurité. Consultez vos plannings et soumettez vos disponibilités dès maintenant.</p>
+          <button onClick="{{ welcomeContinue }}" style="width:100%;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:12px;font:600 13.5px var(--font-text);cursor:pointer">Continuer</button>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAppFlow }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;min-height:100vh;font-family:var(--font-text);color:var(--ink);background:var(--bg-alt)">
+
+  <div style="width:248px;flex:none;background:var(--bg-dark);color:var(--on-dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <img src="./mark.svg" alt="DeEplan" style="height:20px;width:20px" />
+      <div>
+        <div style="font:600 13px var(--font-display);letter-spacing:-0.2px;color:var(--on-dark)">DeEplan</div>
+        <span style="font:400 10.5px var(--font-text);letter-spacing:-0.1px;color:var(--on-dark-muted)">Planning · Responsable</span>
+      </div>
+    </div>
+    <div style="padding:14px 12px;display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto">
+      <sc-for list="{{navItems}}" as="item" hint-placeholder-count="7">
+        <div onClick="{{ item.onClick }}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--r-sm);cursor:pointer;background:{{ item.bg }};color:{{ item.color }};transition:background var(--dur-fast) var(--ease)">
+          <i data-lucide="{{ item.icon }}" style="width:17px;height:17px;flex:none"></i>
+          <span style="font:400 13.5px/1.3 var(--font-text);letter-spacing:-0.1px">{{ item.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:var(--r-full);background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;font:600 11px var(--font-text)">CM</div>
+      <div>
+        <div style="font:600 12.5px var(--font-text);color:var(--on-dark)">Camille Morel</div>
+        <div style="font:400 11px var(--font-text);color:var(--on-dark-muted)">Responsable</div>
+      </div>
+    </div>
+    <div onClick="{{ goToAuthDemo }}" style="padding:12px 20px 6px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--on-dark-muted);font:400 12px var(--font-text)">
+      <i data-lucide="log-in" style="width:14px;height:14px"></i>Connexion / Inscription (démo)
+    </div>
+    <div onClick="{{ goToStarDemo }}" style="padding:6px 20px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--on-dark-muted);font:400 12px var(--font-text)">
+      <i data-lucide="star" style="width:14px;height:14px"></i>Aperçu espace Star (démo)
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:0;padding:36px 44px 80px;position:relative">
+
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <h1 style="font:600 28px/1.2 var(--font-display);letter-spacing:-0.4px;margin:0 0 4px">Tableau de bord</h1>
+      <p style="font:400 14px/1.4 var(--font-text);color:var(--fg-muted);margin:0 0 32px">Mardi 4 août 2026</p>
+
+      <sc-if value="{{ starRolePendingBanner }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 16px;margin-bottom:20px">
+          <i data-lucide="info" style="width:15px;height:15px;color:var(--accent)"></i>
+          <span style="font:400 12.5px var(--font-text)">Votre rôle Star est en attente de validation par un responsable.</span>
+        </div>
+      </sc-if>
+
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:28px;align-items:start">
+
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <h2 style="font:600 17px var(--font-display);letter-spacing:-0.2px;margin:0">Stars de service aujourd'hui</h2>
+            <span style="font:400 12.5px var(--font-text);color:var(--fg-muted)">{{ dutyToday.length }} stars planifiées</span>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ dutyToday }}" as="d" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap;row-gap:10px">
+                <div style="width:36px;height:36px;border-radius:var(--r-full);background:var(--bg-alt);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:600 12px var(--font-text);color:var(--fg);flex:none">{{ d.initials }}</div>
+                <div style="flex:1;min-width:160px">
+                  <div style="font:600 14.5px var(--font-text);letter-spacing:-0.2px;white-space:nowrap">{{ d.name }}</div>
+                  <div style="font:400 12.5px var(--font-text);color:var(--fg-muted);white-space:nowrap">{{ d.poste }} · {{ d.horaire }}</div>
+                </div>
+                <div style="display:flex;gap:8px;flex:none;margin-left:auto">
+                  <button onClick="{{ d.markServed }}" style="display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid {{ d.servedBorder }};background:{{ d.servedBg }};color:{{ d.servedColor }};border-radius:var(--r-pill);padding:7px 14px;font:600 12px var(--font-text);cursor:pointer">
+                    <i data-lucide="check" style="width:14px;height:14px"></i>A servi
+                  </button>
+                  <button onClick="{{ d.markNotServed }}" style="display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid {{ d.notServedBorder }};background:{{ d.notServedBg }};color:{{ d.notServedColor }};border-radius:var(--r-pill);padding:7px 14px;font:600 12px var(--font-text);cursor:pointer">
+                    <i data-lucide="x" style="width:14px;height:14px"></i>N'a pas servi
+                  </button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px">
+          <h2 style="font:600 17px var(--font-display);letter-spacing:-0.2px;margin:0 0 16px">Alertes</h2>
+
+          <div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <i data-lucide="clock-alert" style="width:15px;height:15px;color:#b7791f"></i>
+              <span style="font:600 13px var(--font-text)">Statuts non confirmés depuis 24h</span>
+            </div>
+            <sc-for list="{{ unconfirmed }}" as="u" hint-placeholder-count="2">
+              <div style="padding:8px 0 8px 23px;font:400 12.5px/1.4 var(--font-text);color:var(--fg-muted);border-bottom:1px solid var(--border)">{{ u.name }} · {{ u.poste }} · en attente depuis {{ u.since }}</div>
+            </sc-for>
+          </div>
+
+          <div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <i data-lucide="triangle-alert" style="width:15px;height:15px;color:#c0392b"></i>
+              <span style="font:600 13px var(--font-text)">Conflits de disponibilité non résolus</span>
+            </div>
+            <sc-for list="{{ conflicts }}" as="c" hint-placeholder-count="2">
+              <div style="padding:8px 0 8px 23px;font:400 12.5px/1.4 var(--font-text);color:var(--fg-muted);border-bottom:1px solid var(--border)">{{ c.detail }}</div>
+            </sc-for>
+          </div>
+
+          <div onClick="{{ goToPending }}" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg-alt);border-radius:var(--r-md);cursor:pointer">
+            <div style="display:flex;align-items:center;gap:8px">
+              <i data-lucide="user-plus" style="width:15px;height:15px;color:var(--accent)"></i>
+              <span style="font:600 13px var(--font-text)">Comptes en attente de validation</span>
+            </div>
+            <span style="font:600 13px var(--font-text);color:var(--accent)">{{ pendingCount }} ›</span>
+          </div>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isPlanning }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:16px">
+        <div>
+          <h1 style="font:600 28px/1.2 var(--font-display);letter-spacing:-0.4px;margin:0 0 4px">Planification mensuelle</h1>
+          <p style="font:400 14px/1.4 var(--font-text);color:var(--fg-muted);margin:0">Par section puis par poste. Cliquez sur une case pour assigner un star.</p>
+        </div>
+        <div style="display:flex;gap:10px;flex:none">
+          <button onClick="{{ duplicatePrevMonth }}" style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--pearl);color:var(--ink-80);border-radius:var(--r-pill);padding:9px 16px;font:600 12.5px var(--font-text);cursor:pointer">
+            <i data-lucide="copy" style="width:14px;height:14px"></i>Dupliquer le planning du mois précédent
+          </button>
+          <button onClick="{{ exportPlanning }}" style="display:flex;align-items:center;gap:8px;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:9px 18px;font:600 12.5px var(--font-text);cursor:pointer">
+            <i data-lucide="download" style="width:14px;height:14px"></i>Exporter
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;margin:24px 0 18px">
+        <button onClick="{{ prevMonth }}" style="width:30px;height:30px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="chevron-left" style="width:15px;height:15px"></i></button>
+        <span style="font:600 16px var(--font-display);letter-spacing:-0.2px;min-width:140px;text-align:center">{{ monthLabel }}</span>
+        <button onClick="{{ nextMonth }}" style="width:30px;height:30px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="chevron-right" style="width:15px;height:15px"></i></button>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:auto;max-width:100%">
+        <table style="width:max-content">
+          <thead>
+            <tr>
+              <th style="position:sticky;left:0;background:var(--bg);z-index:2;text-align:left;padding:10px 14px;font:600 12px var(--font-text);color:var(--fg-muted);border-bottom:1px solid var(--border);min-width:180px">Poste</th>
+              <sc-for list="{{ days }}" as="day" hint-placeholder-count="31">
+                <th style="text-align:center;padding:10px 6px;font:600 11.5px var(--font-text);color:{{ day.color }};background:{{ day.bg }};border-bottom:1px solid var(--border);min-width:34px">{{ day.label }}</th>
+              </sc-for>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ planningRows }}" as="row" hint-placeholder-count="9">
+              <sc-if value="{{ row.isSection }}" hint-placeholder-val="{{ false }}">
+                <tr>
+                  <td colspan="32" style="position:sticky;left:0;background:var(--bg-alt);padding:8px 14px;font:600 12.5px var(--font-text);color:var(--ink);border-bottom:1px solid var(--border);border-top:1px solid var(--border)">{{ row.label }}</td>
+                </tr>
+              </sc-if>
+              <sc-if value="{{ row.isPoste }}" hint-placeholder-val="{{ true }}">
+                <tr>
+                  <td style="position:sticky;left:0;background:var(--bg);z-index:1;padding:8px 14px;font:400 13px var(--font-text);border-bottom:1px solid var(--border)">{{ row.label }}</td>
+                  <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="31">
+                    <td onClick="{{ cell.onClick }}" style="text-align:center;padding:6px 4px;border-bottom:1px solid var(--border);border-left:1px solid var(--border);cursor:pointer;background:{{ cell.bg }}">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:var(--r-xs);font:600 10.5px var(--font-text);background:{{ cell.chipBg }};color:{{ cell.chipColor }}">{{ cell.value }}</span>
+                    </td>
+                  </sc-for>
+                </tr>
+              </sc-if>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+
+      <sc-if value="{{ activeCell }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeCell }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:10;display:flex;align-items:center;justify-content:center">
+          <div onClick="{{ stopProp }}" style="width:360px;max-height:70vh;overflow:auto;background:var(--bg);border-radius:var(--r-lg);padding:22px;box-shadow:0 12px 40px rgba(0,0,0,0.2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <h3 style="font:600 16px var(--font-display);margin:0">{{ activeCell.title }}</h3>
+              <i data-lucide="x" onClick="{{ closeCell }}" style="width:17px;height:17px;cursor:pointer;color:var(--fg-muted)"></i>
+            </div>
+            <p style="font:400 12.5px var(--font-text);color:var(--fg-muted);margin:0 0 16px">{{ activeCell.posteLabel }} · {{ activeCell.dayLabel }}</p>
+
+            <sc-if value="{{ activeCell.isOccupied }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 0;margin-bottom:16px;border-bottom:1px solid var(--border)">
+                <div style="width:36px;height:36px;border-radius:var(--r-full);background:var(--bg-alt);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:600 12px var(--font-text)">{{ activeCell.occupiedInitials }}</div>
+                <div style="font:600 14px var(--font-text)">{{ activeCell.occupiedStarName }}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button onClick="{{ activeCell.changerDeStar }}" style="border:1px solid var(--border);background:var(--pearl);color:var(--ink-80);border-radius:var(--r-pill);padding:9px 14px;font:600 12.5px var(--font-text);cursor:pointer">Changer de star</button>
+                <button onClick="{{ activeCell.retirer }}" style="border:1px solid var(--border);background:var(--pearl);color:#c0392b;border-radius:var(--r-pill);padding:9px 14px;font:600 12.5px var(--font-text);cursor:pointer">Retirer</button>
+                <button onClick="{{ closeCell }}" style="border:none;background:transparent;color:var(--fg-muted);border-radius:var(--r-pill);padding:9px 14px;font:600 12.5px var(--font-text);cursor:pointer">Annuler</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ activeCell.noCandidates }}" hint-placeholder-val="{{ false }}">
+              <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:0">Aucun star disponible pour ce poste à cette date.</p>
+            </sc-if>
+
+            <sc-for list="{{ activeCell.candidates }}" as="cand" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font:600 13.5px var(--font-text)">{{ cand.name }}</div>
+                  <div style="font:400 11.5px var(--font-text);color:var(--fg-muted)">{{ cand.availText }}</div>
+                </div>
+                <button onClick="{{ cand.assign }}" style="border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:6px 14px;font:600 12px var(--font-text);cursor:pointer">Assigner</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pendingAssignment }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:11;display:flex;align-items:center;justify-content:center">
+          <div style="width:340px;background:var(--bg);border-radius:var(--r-lg);padding:22px;box-shadow:0 12px 40px rgba(0,0,0,0.2)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <i data-lucide="triangle-alert" style="width:18px;height:18px;color:#b7791f"></i>
+              <h3 style="font:600 15px var(--font-display);margin:0">Règle des dimanches</h3>
+            </div>
+            <p style="font:400 13px/1.5 var(--font-text);color:var(--ink-80);margin:0 0 20px">{{ pendingAssignment.message }}</p>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ pendingAssignment.cancel }}" style="flex:1;border:1px solid var(--border);background:var(--pearl);color:var(--ink-80);border-radius:var(--r-pill);padding:9px;font:600 12.5px var(--font-text);cursor:pointer">Annuler</button>
+              <button onClick="{{ pendingAssignment.confirm }}" style="flex:1;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:9px;font:600 12.5px var(--font-text);cursor:pointer">Planifier quand même</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{ isStructure }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <h1 style="font:600 28px/1.2 var(--font-display);letter-spacing:-0.4px;margin:0">Structure du département</h1>
+        <button style="display:flex;align-items:center;gap:8px;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:9px 18px;font:600 12.5px var(--font-text);cursor:pointer">
+          <i data-lucide="plus" style="width:14px;height:14px"></i>Nouvelle section
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;max-width:820px">
+        <sc-for list="{{ sectionsTree }}" as="sec" hint-placeholder-count="4">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px">
+              <i data-lucide="{{ sec.chevron }}" onClick="{{ sec.toggle }}" style="width:16px;height:16px;cursor:pointer;color:var(--fg-muted)"></i>
+              <span style="flex:1;font:600 15px var(--font-display);letter-spacing:-0.2px">{{ sec.name }}</span>
+              <span style="font:400 12px var(--font-text);color:var(--fg-muted)">{{ sec.count }} postes</span>
+              <div style="display:flex;gap:6px">
+                <i data-lucide="pencil" style="width:15px;height:15px;color:var(--fg-muted);cursor:pointer"></i>
+                <i data-lucide="trash-2" style="width:15px;height:15px;color:var(--fg-muted);cursor:pointer"></i>
+              </div>
+            </div>
+            <sc-if value="{{ sec.expanded }}" hint-placeholder-val="{{ true }}">
+              <div style="border-top:1px solid var(--border);background:var(--bg-alt)">
+                <sc-for list="{{ sec.postes }}" as="p" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:10px;padding:11px 18px 11px 44px;border-bottom:1px solid var(--border)">
+                    <i data-lucide="briefcase" style="width:14px;height:14px;color:var(--fg-muted)"></i>
+                    <span style="flex:1;font:400 13.5px var(--font-text)">{{ p.name }}</span>
+                    <div style="display:flex;gap:6px">
+                      <i data-lucide="pencil" style="width:14px;height:14px;color:var(--fg-muted);cursor:pointer"></i>
+                      <i data-lucide="trash-2" style="width:14px;height:14px;color:var(--fg-muted);cursor:pointer"></i>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="padding:10px 18px 12px 44px">
+                  <button style="display:flex;align-items:center;gap:6px;border:1px dashed var(--border);background:transparent;color:var(--accent);border-radius:var(--r-pill);padding:6px 14px;font:600 12px var(--font-text);cursor:pointer">
+                    <i data-lucide="plus" style="width:13px;height:13px"></i>Ajouter un poste
+                  </button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDirectoryList }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <h1 style="font:600 28px/1.2 var(--font-display);letter-spacing:-0.4px;margin:0">Annuaire des stars</h1>
+        <select onChange="{{ onFilterChange }}" value="{{ filterSection }}" style="border:1px solid var(--border);background:var(--bg);border-radius:var(--r-pill);padding:9px 16px;font:600 12.5px var(--font-text);color:var(--ink-80)">
+          <option value="all">Toutes les sections</option>
+          <sc-for list="{{ sectionOptions }}" as="opt" hint-placeholder-count="4">
+            <option value="{{ opt }}">{{ opt }}</option>
+          </sc-for>
+        </select>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+        <table style="width:100%">
+          <thead>
+            <tr style="background:var(--bg-alt)">
+              <th style="text-align:left;padding:12px 18px;font:600 12px var(--font-text);color:var(--fg-muted)">Nom</th>
+              <th style="text-align:left;padding:12px 18px;font:600 12px var(--font-text);color:var(--fg-muted)">Sections</th>
+              <th style="text-align:left;padding:12px 18px;font:600 12px var(--font-text);color:var(--fg-muted)">Statut</th>
+              <th style="text-align:left;padding:12px 18px;font:600 12px var(--font-text);color:var(--fg-muted)">Dimanches travaillés</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ filteredStars }}" as="s" hint-placeholder-count="8">
+              <tr onClick="{{ s.open }}" style="cursor:pointer;border-top:1px solid var(--border)">
+                <td style="padding:13px 18px;font:600 13.5px var(--font-text)">{{ s.name }}</td>
+                <td style="padding:13px 18px;font:400 13px var(--font-text);color:var(--fg-muted)">{{ s.sectionsLabel }}</td>
+                <td style="padding:13px 18px;font:400 13px var(--font-text);color:var(--fg-muted)">{{ s.statusLabel }}</td>
+                <td style="padding:13px 18px;font:400 13px var(--font-text);color:var(--fg-muted)">{{ s.sundaysWorked }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDirectoryDetail }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeStar }}" style="display:flex;align-items:center;gap:8px;color:var(--fg-muted);cursor:pointer;margin-bottom:18px;font:600 12.5px var(--font-text)">
+        <i data-lucide="chevron-left" style="width:15px;height:15px"></i>Retour à l'annuaire
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px">
+        <div style="width:56px;height:56px;border-radius:var(--r-full);background:var(--bg-alt);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:600 18px var(--font-text)">{{ starDetail.initials }}</div>
+        <div style="flex:1">
+          <h1 style="font:600 24px var(--font-display);letter-spacing:-0.3px;margin:0">{{ starDetail.name }}</h1>
+          <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:2px 0 0">{{ starDetail.sectionsLabel }}</p>
+        </div>
+        <button style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--pearl);color:#c0392b;border-radius:var(--r-pill);padding:9px 16px;font:600 12.5px var(--font-text);cursor:pointer">
+          <i data-lucide="user-x" style="width:14px;height:14px"></i>Désactiver le compte
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px">
+          <h3 style="font:600 15px var(--font-display);margin:0 0 6px">Dimanches travaillés</h3>
+          <p style="font:600 32px var(--font-display);letter-spacing:-0.3px;color:var(--accent);margin:0">{{ starDetail.sundaysWorked }}</p>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px">
+          <h3 style="font:600 15px var(--font-display);margin:0 0 12px">Sections assignées</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ starDetail.sections }}" as="sec" hint-placeholder-count="2">
+              <span style="background:var(--bg-alt);border-radius:var(--r-pill);padding:6px 14px;font:600 12px var(--font-text)">{{ sec }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px">
+          <h3 style="font:600 15px var(--font-display);margin:0 0 12px">Disponibilités soumises</h3>
+          <sc-for list="{{ starDetail.availability }}" as="a" hint-placeholder-count="3">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font:400 13px var(--font-text)">
+              <span>{{ a.date }}</span><span style="color:var(--fg-muted)">{{ a.creneau }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px">
+          <h3 style="font:600 15px var(--font-display);margin:0 0 12px">Historique de statuts</h3>
+          <sc-for list="{{ starDetail.statusHistory }}" as="h" hint-placeholder-count="3">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font:400 13px var(--font-text)">
+              <span style="color:var(--fg-muted)">{{ h.date }}</span><span>{{ h.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isPending }}" hint-placeholder-val="{{ false }}">
+      <h1 style="font:600 28px/1.2 var(--font-display);letter-spacing:-0.4px;margin:0 0 4px">Comptes en attente de validation</h1>
+      <p style="font:400 14px/1.4 var(--font-text);color:var(--fg-muted);margin:0 0 28px">{{ pendingAccounts.length }} nouvelles inscriptions à traiter</p>
+
+      <div style="display:flex;flex-direction:column;gap:16px;max-width:720px">
+        <sc-for list="{{ pendingAccounts }}" as="acc" hint-placeholder-count="3">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div>
+                <div style="font:600 15px var(--font-text)">{{ acc.name }}</div>
+                <div style="font:400 12.5px var(--font-text);color:var(--fg-muted)">{{ acc.email }} · inscrit le {{ acc.date }}</div>
+              </div>
+            </div>
+            <p style="font:600 12px var(--font-text);color:var(--fg-muted);margin:0 0 8px">Assigner à une ou plusieurs sections</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <sc-for list="{{ acc.sectionChoices }}" as="ch" hint-placeholder-count="4">
+                <label style="display:flex;align-items:center;gap:6px;border:1px solid {{ ch.border }};background:{{ ch.bg }};color:{{ ch.color }};border-radius:var(--r-pill);padding:6px 12px 6px 8px;font:600 12px var(--font-text);cursor:pointer">
+                  <input type="checkbox" checked="{{ ch.checked }}" onChange="{{ ch.toggle }}" style="accent-color:var(--accent)" />{{ ch.name }}
+                </label>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ acc.validate }}" style="display:flex;align-items:center;gap:6px;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:8px 16px;font:600 12.5px var(--font-text);cursor:pointer">
+                <i data-lucide="check" style="width:14px;height:14px"></i>Valider
+              </button>
+              <button onClick="{{ acc.reject }}" style="display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--pearl);color:var(--ink-80);border-radius:var(--r-pill);padding:8px 16px;font:600 12.5px var(--font-text);cursor:pointer">
+                <i data-lucide="x" style="width:14px;height:14px"></i>Refuser
+              </button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+          <p style="font:400 13.5px var(--font-text);color:var(--fg-muted)">Aucun compte en attente.</p>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAnnouncements }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <h1 style="font:600 28px/1.2 var(--font-display);letter-spacing:-0.4px;margin:0">Annonces</h1>
+        <button onClick="{{ openNewAnnouncement }}" style="display:flex;align-items:center;gap:8px;border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:10px 20px;font:600 13px var(--font-text);cursor:pointer">
+          <i data-lucide="plus" style="width:15px;height:15px"></i>Nouvelle annonce
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;max-width:760px">
+        <sc-for list="{{ announcements }}" as="an" hint-placeholder-count="4">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;display:flex;gap:16px;align-items:flex-start">
+            <div style="flex:none;width:80px;font:400 12px var(--font-text);color:var(--fg-muted);padding-top:2px">{{ an.date }}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font:600 15px var(--font-text);margin-bottom:4px">{{ an.title }}</div>
+              <div style="font:400 13px/1.4 var(--font-text);color:var(--fg-muted)">{{ an.excerpt }}</div>
+            </div>
+            <div style="display:flex;gap:10px;flex:none;padding-top:2px">
+              <i data-lucide="pencil" onClick="{{ an.edit }}" style="width:16px;height:16px;color:var(--fg-muted);cursor:pointer"></i>
+              <i data-lucide="trash-2" style="width:16px;height:16px;color:var(--fg-muted);cursor:pointer"></i>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ announcementModal }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeAnnouncementModal }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:10;display:flex;align-items:center;justify-content:center">
+        <div onClick="{{ stopProp }}" style="width:440px;background:var(--bg);border-radius:var(--r-lg);padding:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <h3 style="font:600 17px var(--font-display);margin:0">{{ announcementModal.heading }}</h3>
+            <i data-lucide="x" onClick="{{ closeAnnouncementModal }}" style="width:17px;height:17px;cursor:pointer;color:var(--fg-muted)"></i>
+          </div>
+          <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Titre</label>
+          <input value="{{ announcementModal.title }}" onChange="{{ announcementModal.setTitle }}" placeholder="Titre de l'annonce" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);margin-bottom:16px" />
+          <label style="display:block;font:600 12px var(--font-text);color:var(--ink-80);margin-bottom:6px">Contenu</label>
+          <textarea value="{{ announcementModal.content }}" onChange="{{ announcementModal.setContent }}" placeholder="Rédigez le contenu de l'annonce" rows="5" style="width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font:400 14px var(--font-text);resize:none;font-family:var(--font-text);margin-bottom:20px"></textarea>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button onClick="{{ closeAnnouncementModal }}" style="border:1px solid var(--border);background:var(--pearl);color:var(--ink-80);border-radius:var(--r-pill);padding:9px 16px;font:600 12.5px var(--font-text);cursor:pointer">Annuler</button>
+            <button onClick="{{ announcementModal.save }}" style="border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:9px 18px;font:600 12.5px var(--font-text);cursor:pointer">{{ announcementModal.saveLabel }}</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStarFlow }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;background:var(--bg-alt);display:flex;flex-direction:column;align-items:center;padding:40px 20px;font-family:var(--font-text);color:var(--ink)">
+  <div style="font:600 12px var(--font-text);color:var(--fg-muted);letter-spacing:-0.1px;margin-bottom:20px">Aperçu de l'espace Star</div>
+  <div style="display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-pill);padding:4px;margin-bottom:28px">
+    <button onClick="{{ starView.toggleDesktop }}" style="border:none;border-radius:var(--r-pill);padding:8px 18px;font:600 12.5px var(--font-text);cursor:pointer;background:{{ starView.desktopBg }};color:{{ starView.desktopColor }}">Desktop</button>
+    <button onClick="{{ starView.toggleMobile }}" style="border:none;border-radius:var(--r-pill);padding:8px 18px;font:600 12.5px var(--font-text);cursor:pointer;background:{{ starView.mobileBg }};color:{{ starView.mobileColor }}">Mobile</button>
+  </div>
+
+  <div style="width:{{ starView.frameWidth }};height:720px;border:{{ starView.frameBorder }};border-radius:{{ starView.frameRadius }};background:var(--bg);overflow:hidden;display:flex;flex-direction:{{ starView.frameDirection }}">
+
+    <sc-if value="{{ starView.isDesktop }}" hint-placeholder-val="{{ true }}">
+      <div style="width:220px;flex:none;background:var(--bg-dark);color:var(--on-dark);display:flex;flex-direction:column">
+        <div style="padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.08)">
+          <span style="font:600 12px var(--font-text);letter-spacing:-0.2px;color:var(--on-dark-muted)">Planning · Star</span>
+        </div>
+        <div style="padding:12px 10px;display:flex;flex-direction:column;gap:2px;flex:1">
+          <sc-for list="{{ starNavItems }}" as="item" hint-placeholder-count="4">
+            <div onClick="{{ item.onClick }}" style="display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:var(--r-sm);cursor:pointer;background:{{ item.bg }};color:{{ item.color }}">
+              <i data-lucide="{{ item.icon }}" style="width:16px;height:16px;flex:none"></i>
+              <span style="font:400 13px var(--font-text)">{{ item.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:12px 18px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:var(--r-full);background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;font:600 10px var(--font-text)">NH</div>
+          <div><div style="font:600 12px var(--font-text)">Nora Haddad</div><div style="font:400 10.5px var(--font-text);color:var(--on-dark-muted)">Star</div></div>
+        </div>
+        <div onClick="{{ backToResponsable }}" style="padding:10px 18px 16px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--on-dark-muted);font:400 11.5px var(--font-text)">
+          <i data-lucide="chevron-left" style="width:13px;height:13px"></i>Espace Responsable (démo)
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+
+      <sc-if value="{{ starView.isMobile }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--tile-1);flex:none">
+          <span style="font:600 11px var(--font-text);color:var(--on-dark)">9:41</span>
+          <div style="display:flex;gap:6px"><i data-lucide="wifi" style="width:12px;height:12px;color:var(--on-dark)"></i><i data-lucide="battery-full" style="width:14px;height:14px;color:var(--on-dark)"></i></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex:none">
+          <span style="font:600 15px var(--font-display)">{{ starPageTitle }}</span>
+          <div onClick="{{ backToResponsable }}" style="font:400 11px var(--font-text);color:var(--fg-muted);cursor:pointer">Responsable ‹</div>
+        </div>
+      </sc-if>
+
+      <div style="flex:1;overflow-y:auto;padding:24px">
+
+        <sc-if value="{{ isStarCalendar }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ starView.isDesktop }}" hint-placeholder-val="{{ true }}">
+            <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 16px">Mon calendrier</h2>
+          </sc-if>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <button onClick="{{ prevStarMonth }}" style="width:26px;height:26px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="chevron-left" style="width:13px;height:13px"></i></button>
+            <span style="font:600 14px var(--font-display);min-width:110px;text-align:center">{{ starMonthLabel }}</span>
+            <button onClick="{{ nextStarMonth }}" style="width:26px;height:26px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="chevron-right" style="width:13px;height:13px"></i></button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+            <sc-for list="{{ statusLegend }}" as="lg" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:9px;height:9px;border-radius:50%;background:{{ lg.dot }}"></span>
+                <span style="font:400 11.5px var(--font-text);color:var(--fg-muted)">{{ lg.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px">
+            <sc-for list="{{ weekdayLabels }}" as="wd" hint-placeholder-count="7">
+              <div style="text-align:center;font:600 10.5px var(--font-text);color:var(--fg-muted)">{{ wd }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px">
+            <sc-for list="{{ starCalCells }}" as="c" hint-placeholder-count="35">
+              <sc-if value="{{ c.blank }}" hint-placeholder-val="{{ false }}">
+                <div></div>
+              </sc-if>
+              <sc-if value="{{ c.isDay }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ c.onClick }}" style="border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 4px;min-height:52px;cursor:{{ c.cursor }};background:var(--bg)">
+                  <div style="font:600 11px var(--font-text)">{{ c.day }}</div>
+                  <div style="margin-top:4px;font:600 9px var(--font-text);color:{{ c.color }};background:{{ c.bg }};border-radius:4px;padding:2px 4px;display:inline-block">{{ c.label }}</div>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isStarAvailability }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 4px">Mes disponibilités</h2>
+          <p style="font:400 13px var(--font-text);color:var(--fg-muted);margin:0 0 16px">Sélectionnez vos disponibilités pour {{ availMonthLabel }}. Cliquez sur une date pour basculer disponible / indisponible.</p>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <button onClick="{{ prevAvailMonth }}" style="width:26px;height:26px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="chevron-left" style="width:13px;height:13px"></i></button>
+            <span style="font:600 14px var(--font-display);min-width:110px;text-align:center">{{ availMonthLabel }}</span>
+            <button onClick="{{ nextAvailMonth }}" style="width:26px;height:26px;border-radius:var(--r-full);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="chevron-right" style="width:13px;height:13px"></i></button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#2e7d32"></span><span style="font:400 11.5px var(--font-text);color:var(--fg-muted)">Disponible</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#c0392b"></span><span style="font:400 11.5px var(--font-text);color:var(--fg-muted)">Indisponible</span></div>
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--border)"></span><span style="font:400 11.5px var(--font-text);color:var(--fg-muted)">Non renseigné</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px">
+            <sc-for list="{{ weekdayLabels }}" as="wd" hint-placeholder-count="7">
+              <div style="text-align:center;font:600 10.5px var(--font-text);color:var(--fg-muted)">{{ wd }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:20px">
+            <sc-for list="{{ availCells }}" as="c" hint-placeholder-count="35">
+              <sc-if value="{{ c.blank }}" hint-placeholder-val="{{ false }}">
+                <div></div>
+              </sc-if>
+              <sc-if value="{{ c.isDay }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ c.onClick }}" style="border:1px solid {{ c.border }};background:{{ c.bg }};border-radius:var(--r-sm);padding:8px 4px;min-height:38px;cursor:pointer;text-align:center">
+                  <div style="font:600 11.5px var(--font-text);color:{{ c.color }}">{{ c.day }}</div>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+          <button onClick="{{ submitAvailability }}" style="border:none;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:11px 22px;font:600 13px var(--font-text);cursor:pointer">Valider mes disponibilités</button>
+        </sc-if>
+
+        <sc-if value="{{ isStarAnnouncements }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 16px">Annonces</h2>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ announcements }}" as="an" hint-placeholder-count="4">
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px">
+                <div style="font:400 11.5px var(--font-text);color:var(--fg-muted);margin-bottom:4px">{{ an.date }}</div>
+                <div style="font:600 14px var(--font-text);margin-bottom:4px">{{ an.title }}</div>
+                <div style="font:400 12.5px/1.4 var(--font-text);color:var(--fg-muted)">{{ an.excerpt }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isStarNotifications }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font:600 20px var(--font-display);letter-spacing:-0.3px;margin:0 0 16px">Notifications</h2>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ starNotifications }}" as="n" hint-placeholder-count="4">
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 4px;border-bottom:1px solid var(--border)">
+                <span style="width:8px;height:8px;border-radius:50%;background:{{ n.dotColor }};margin-top:6px;flex:none"></span>
+                <div style="width:32px;height:32px;border-radius:var(--r-full);background:var(--bg-alt);display:flex;align-items:center;justify-content:center;flex:none"><i data-lucide="{{ n.icon }}" style="width:15px;height:15px;color:var(--accent)"></i></div>
+                <div style="flex:1">
+                  <div style="font:{{ n.weight }} 13px/1.4 var(--font-text)">{{ n.text }}</div>
+                  <div style="font:400 11px var(--font-text);color:var(--fg-muted);margin-top:2px">{{ n.date }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <sc-if value="{{ starView.isMobile }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;border-top:1px solid var(--border);flex:none">
+          <sc-for list="{{ starNavItems }}" as="item" hint-placeholder-count="4">
+            <div onClick="{{ item.onClick }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;color:{{ item.tabColor }}">
+              <i data-lucide="{{ item.icon }}" style="width:18px;height:18px"></i>
+              <span style="font:600 9.5px var(--font-text)">{{ item.shortLabel }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+<sc-if value="{{ starShiftDetail }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeShiftDetail }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.28);z-index:10;display:flex;align-items:center;justify-content:center">
+    <div onClick="{{ stopProp }}" style="width:340px;background:var(--bg);border-radius:var(--r-lg);padding:22px;box-shadow:0 12px 40px rgba(0,0,0,0.2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h3 style="font:600 16px var(--font-display);margin:0">Détail du shift</h3>
+        <i data-lucide="x" onClick="{{ closeShiftDetail }}" style="width:17px;height:17px;cursor:pointer;color:var(--fg-muted)"></i>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font:400 13px var(--font-text)">
+        <div><span style="color:var(--fg-muted)">Date</span><br />{{ starShiftDetail.dateLabel }}</div>
+        <div><span style="color:var(--fg-muted)">Section</span><br />{{ starShiftDetail.section }}</div>
+        <div><span style="color:var(--fg-muted)">Poste</span><br />{{ starShiftDetail.poste }}</div>
+        <div><span style="color:var(--fg-muted)">Horaire</span><br />{{ starShiftDetail.horaire }}</div>
+        <div><span style="color:var(--fg-muted)">Description</span><br />{{ starShiftDetail.description }}</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+
+  sections = [
+    { id:'s1', name:'Accueil', postes:[{id:'p1',name:'Accueil VIP',idx:0},{id:'p2',name:'Vestiaire',idx:1}] },
+    { id:'s2', name:'Restauration', postes:[{id:'p3',name:'Bar',idx:2},{id:'p4',name:'Cuisine',idx:3},{id:'p5',name:'Salle',idx:4}] },
+    { id:'s3', name:'Logistique', postes:[{id:'p6',name:'Stock',idx:5},{id:'p7',name:'Livraisons',idx:6}] },
+    { id:'s4', name:'Sécurité', postes:[{id:'p8',name:'Entrée',idx:7},{id:'p9',name:'Ronde',idx:8}] },
+  ];
+
+  stars = [
+    { id:'st1', name:'Léa Martin', sections:['Accueil'], sundaysWorked:5 },
+    { id:'st2', name:'Julien Dubois', sections:['Restauration'], sundaysWorked:3 },
+    { id:'st3', name:'Nora Haddad', sections:['Restauration'], sundaysWorked:7 },
+    { id:'st4', name:'Marc Petit', sections:['Logistique'], sundaysWorked:2 },
+    { id:'st5', name:'Chloé Bernard', sections:['Sécurité'], sundaysWorked:4 },
+    { id:'st6', name:'Yanis Roche', sections:['Accueil'], sundaysWorked:1 },
+    { id:'st7', name:'Inès Fabre', sections:['Restauration'], sundaysWorked:6 },
+    { id:'st8', name:'Karim Belhadj', sections:['Logistique'], sundaysWorked:3 },
+    { id:'st9', name:'Sophie Lambert', sections:['Sécurité'], sundaysWorked:5 },
+    { id:'st10', name:'Hugo Faure', sections:['Restauration'], sundaysWorked:2 },
+  ];
+
+  dutyTodayData = [
+    { starId:'st1', name:'Léa Martin', poste:'Accueil VIP', horaire:'9h - 17h' },
+    { starId:'st3', name:'Nora Haddad', poste:'Bar', horaire:'11h - 19h' },
+    { starId:'st4', name:'Marc Petit', poste:'Stock', horaire:'8h - 16h' },
+    { starId:'st5', name:'Chloé Bernard', poste:'Entrée', horaire:'14h - 22h' },
+    { starId:'st7', name:'Inès Fabre', poste:'Salle', horaire:'11h - 19h' },
+  ];
+
+  unconfirmed = [
+    { name:'Marc Petit', poste:'Stock', since:'26h' },
+    { name:'Chloé Bernard', poste:'Entrée', since:'30h' },
+  ];
+
+  conflicts = [
+    { detail:"Nora Haddad indisponible le 14/08 mais planifiée au Bar 11h-19h" },
+    { detail:"Karim Belhadj planifié sur deux postes le même créneau le 20/08" },
+  ];
+
+  announcements = [
+    { id:'a1', date:'02/08/2026', title:"Nouveaux horaires d'été", excerpt:"Les horaires du Bar évoluent du 5 au 30 août, service jusqu'à 23h le week-end." },
+    { id:'a2', date:'28/07/2026', title:'Maintenance du vestiaire', excerpt:'Le vestiaire sera fermé le 30 juillet de 8h à 12h pour entretien.' },
+    { id:'a3', date:'15/07/2026', title:'Bienvenue aux nouveaux stars', excerpt:'Trois nouveaux stars rejoignent la section Restauration ce mois-ci.' },
+    { id:'a4', date:'01/07/2026', title:'Rappel : disponibilités de juillet', excerpt:'Merci de soumettre vos disponibilités avant le 5 de chaque mois.' },
+  ];
+
+  historyLogData = [
+    { id:'h1', star:'Nora Haddad', date:'14/08/2026', poste:'Bar', type:'Planifiée hors disponibilité', by:'Système', reason:'' },
+    { id:'h2', star:'Karim Belhadj', date:'20/08/2026', poste:'Stock', type:'Double affectation même créneau', by:'Camille Morel', reason:'Remplacement urgent' },
+    { id:'h3', star:'Yanis Roche', date:'09/08/2026', poste:'Accueil VIP', type:'Dépassement heures hebdomadaires', by:'Camille Morel', reason:'' },
+    { id:'h4', star:'Sophie Lambert', date:'02/08/2026', poste:'Ronde', type:'Repos hebdomadaire non respecté', by:'Camille Morel', reason:'Absence collègue' },
+    { id:'h5', star:'Julien Dubois', date:'19/07/2026', poste:'Bar', type:'Planifiée hors disponibilité', by:'Système', reason:'' },
+    { id:'h6', star:'Marc Petit', date:'11/07/2026', poste:'Livraisons', type:'Dépassement heures hebdomadaires', by:'Camille Morel', reason:'Pic de charge' },
+  ];
+
+  state = {
+    page: 'dashboard',
+    dutyStatus: {},
+    year: 2026, month: 8,
+    expanded: { s1:true, s2:true, s3:true, s4:false },
+    assignments: {},
+    activeCell: null,
+    pendingAssignment: null,
+    announcementModal: null,
+    filterSection: 'all',
+    selectedStar: null,
+    pendingAccounts: [
+      { id:'pa1', name:'Sarah Cohen', email:'sarah.cohen@mail.com', date:'01/08/2026', checks:{} },
+      { id:'pa2', name:'Thomas Girard', email:'thomas.girard@mail.com', date:'30/07/2026', checks:{} },
+      { id:'pa3', name:'Amina Zaidi', email:'amina.zaidi@mail.com', date:'29/07/2026', checks:{} },
+    ],
+    authPage: null,
+    authViewMode: 'desktop',
+    signupRoles: { manager: false, star: false },
+    starRolePendingBanner: false,
+
+    starFlow: null,
+    starViewMode: 'desktop',
+    starYear: 2026, starMonth: 8,
+    starActiveDay: null,
+    availYear: 2026, availMonth: 9,
+    availability: {},
+    forgotPasswordEmail: '', forgotPasswordSent: false,
+  };
+
+  starNotificationsData = [
+    { id:'n1', icon:'party-popper', text:'Bienvenue dans le département Le Comptoir !', date:'01/08/2026 09:12', unread:false },
+    { id:'n2', icon:'briefcase', text:"Votre responsable a modifié votre poste du 9 août : Accueil VIP → Bar.", date:'03/08/2026 16:40', unread:false },
+    { id:'n3', icon:'bell', text:'Vous êtes de service aujourd\'hui au Bar de 11h à 19h.', date:'04/08/2026 07:00', unread:true },
+    { id:'n4', icon:'clock', text:'Rappel : votre shift au Bar commence dans 3 heures.', date:'04/08/2026 09:00', unread:true },
+  ];
+
+  componentDidMount() { this.icons(); }
+  componentDidUpdate() { this.icons(); }
+  icons() { if (window.lucide) window.lucide.createIcons(); }
+
+  setPage = (p) => () => this.setState({ page:p, selectedStar:null, activeCell:null });
+
+  markDuty = (id, val) => () => this.setState(s => ({ dutyStatus: { ...s.dutyStatus, [id]: val } }));
+
+  toggleExpand = (id) => () => this.setState(s => ({ expanded: { ...s.expanded, [id]: !s.expanded[id] } }));
+
+  prevMonth = () => this.setState(s => { let m = s.month - 1, y = s.year; if (m < 1) { m = 12; y--; } return { month:m, year:y }; });
+  nextMonth = () => this.setState(s => { let m = s.month + 1, y = s.year; if (m > 12) { m = 1; y++; } return { month:m, year:y }; });
+
+  openCell = (posteId, sectionName, posteLabel, day, isSunday) => () => this.setState({ activeCell: { key: posteId+'_'+day, posteId, posteLabel, day, sectionName, isSunday, forceCandidates:false } });
+  closeCell = () => this.setState({ activeCell: null, pendingAssignment: null });
+  stopProp = (e) => e.stopPropagation();
+  changerDeStar = () => this.setState(s => ({ activeCell: { ...s.activeCell, forceCandidates: true } }));
+  retirerAssignation = (key) => () => this.setState(s => ({ assignments: { ...s.assignments, [key]: null }, activeCell: null }));
+
+  sundayCountForStar(starId) {
+    const daysInMonth = new Date(this.state.year, this.state.month, 0).getDate();
+    let count = 0;
+    this.sections.forEach(sec => sec.postes.forEach(p => {
+      for (let d = 1; d <= daysInMonth; d++) {
+        if (new Date(this.state.year, this.state.month - 1, d).getDay() !== 0) continue;
+        const key = p.id + '_' + d;
+        const eff = Object.prototype.hasOwnProperty.call(this.state.assignments, key) ? this.state.assignments[key] : this.cellSeed(p.idx, d);
+        if (eff === starId) count++;
+      }
+    }));
+    return count;
+  }
+
+  requestAssign = (key, starId, isSunday, posteLabel, dayLabel) => () => {
+    if (isSunday && this.sundayCountForStar(starId) >= 3) {
+      this.setState({ pendingAssignment: { key, starId, posteLabel, dayLabel }, activeCell: null });
+      return;
+    }
+    this.setState(s => ({ assignments: { ...s.assignments, [key]: starId }, activeCell: null }));
+  };
+  confirmAssignAnyway = () => this.setState(s => {
+    if (!s.pendingAssignment) return {};
+    return { assignments: { ...s.assignments, [s.pendingAssignment.key]: s.pendingAssignment.starId }, pendingAssignment: null };
+  });
+  cancelAssignWarning = () => this.setState({ pendingAssignment: null });
+
+  openStar = (id) => () => this.setState({ selectedStar: id });
+  closeStar = () => this.setState({ selectedStar: null });
+
+  onFilterChange = (e) => this.setState({ filterSection: e.target.value });
+
+  togglePendingCheck = (accId, sectionName) => () => this.setState(s => ({
+    pendingAccounts: s.pendingAccounts.map(a => a.id !== accId ? a : { ...a, checks: { ...a.checks, [sectionName]: !a.checks[sectionName] } })
+  }));
+
+  validateAccount = (id) => () => this.setState(s => ({ pendingAccounts: s.pendingAccounts.filter(a => a.id !== id) }));
+  rejectAccount = (id) => () => this.setState(s => ({ pendingAccounts: s.pendingAccounts.filter(a => a.id !== id) }));
+
+  openNewAnnouncement = () => this.setState({ announcementModal: { mode:'new', id:null, title:'', content:'' } });
+  openEditAnnouncement = (an) => () => this.setState({ announcementModal: { mode:'edit', id: an.id, title: an.title, content: an.excerpt } });
+  closeAnnouncementModal = () => this.setState({ announcementModal: null });
+  setAnnouncementTitle = (e) => this.setState(s => ({ announcementModal: { ...s.announcementModal, title: e.target.value } }));
+  setAnnouncementContent = (e) => this.setState(s => ({ announcementModal: { ...s.announcementModal, content: e.target.value } }));
+  saveAnnouncement = () => {
+    const m = this.state.announcementModal;
+    if (!m) return;
+    if (m.mode === 'edit') {
+      this.announcements = this.announcements.map(a => a.id === m.id ? { ...a, title: m.title, excerpt: m.content } : a);
+    } else {
+      const today = '04/08/2026';
+      this.announcements = [{ id: 'a' + Date.now(), date: today, title: m.title, excerpt: m.content }, ...this.announcements];
+    }
+    this.setState({ announcementModal: null });
+  };
+
+  duplicatePrevMonth = () => { alert("Le planning du mois précédent a été dupliqué sur " + this.monthLabel(this.state.month, this.state.year) + " (maquette)."); };
+  exportPlanning = () => { alert("Export du planning en cours (maquette)."); };
+
+  goToAuthDemo = () => this.setState({ authPage: 'home', starFlow: null });
+  goHome = () => this.setState({ authPage: 'home' });
+  goForgotPassword = () => this.setState({ authPage: 'forgot-password', forgotPasswordSent: false, forgotPasswordEmail: '' });
+  setForgotPasswordEmail = (e) => this.setState({ forgotPasswordEmail: e.target.value });
+  sendResetLink = () => this.setState({ forgotPasswordSent: true });
+  goRoleSelector = () => this.setState({ authPage: 'role-selector' });
+  continueAsResponsable = () => this.setState({ authPage: null, starFlow: null, page: 'dashboard' });
+  continueAsStar = () => this.setState({ authPage: null, starFlow: 'calendar' });
+  toggleRoleManager = () => this.setState(s => ({ signupRoles: { ...s.signupRoles, manager: !s.signupRoles.manager } }));
+  toggleRoleStar = () => this.setState(s => ({ signupRoles: { ...s.signupRoles, star: !s.signupRoles.star } }));
+  goSignupIdentity = () => { if (this.state.signupRoles.manager || this.state.signupRoles.star) this.setState({ authPage: 'signup-identity' }); };
+  createAccount = () => {
+    const { manager, star } = this.state.signupRoles;
+    if (manager) this.setState({ authPage: null, starFlow: null, page: 'dashboard', starRolePendingBanner: star });
+    else if (star) this.setState({ authPage: 'pending-validation' });
+  };
+  goToStarDemo = () => this.setState({ starFlow: 'calendar', authPage: null });
+  setStarPage = (p) => () => this.setState({ starFlow: p, starActiveDay: null });
+  setStarView = (m) => () => this.setState({ starViewMode: m });
+  backToResponsable = () => this.setState({ starFlow: null, page: 'dashboard' });
+  prevStarMonth = () => this.setState(s => { let m = s.starMonth - 1, y = s.starYear; if (m < 1) { m = 12; y--; } return { starMonth: m, starYear: y }; });
+  nextStarMonth = () => this.setState(s => { let m = s.starMonth + 1, y = s.starYear; if (m > 12) { m = 1; y++; } return { starMonth: m, starYear: y }; });
+  openShiftDetail = (day) => () => this.setState({ starActiveDay: day });
+  closeShiftDetail = () => this.setState({ starActiveDay: null });
+  prevAvailMonth = () => this.setState(s => { let m = s.availMonth - 1, y = s.availYear; if (m < 1) { m = 12; y--; } return { availMonth: m, availYear: y }; });
+  nextAvailMonth = () => this.setState(s => { let m = s.availMonth + 1, y = s.availYear; if (m > 12) { m = 1; y++; } return { availMonth: m, availYear: y }; });
+  toggleAvailability = (key) => () => this.setState(s => {
+    const cur = s.availability[key];
+    const next = cur === 'available' ? 'unavailable' : cur === 'unavailable' ? undefined : 'available';
+    const av = { ...s.availability };
+    if (next) av[key] = next; else delete av[key];
+    return { availability: av };
+  });
+  submitAvailability = () => { alert('Disponibilités soumises pour validation (maquette).'); };
+  goLogin = () => this.setState({ authPage: 'login' });
+  goAccountType = () => this.setState({ authPage: 'account-type', signupRoles: { manager: false, star: false } });
+  goPendingValidation = () => this.setState({ authPage: 'pending-validation' });
+  goWelcome = () => this.setState({ authPage: 'welcome' });
+  exitToApp = () => this.setState({ authPage: null, page: 'dashboard' });
+  welcomeContinue = () => this.setState({ authPage: null, starFlow: 'calendar' });
+  setAuthView = (m) => () => this.setState({ authViewMode: m });
+
+  monthLabel(m, y) {
+    const names = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    return names[m-1].charAt(0).toUpperCase() + names[m-1].slice(1) + ' ' + y;
+  }
+
+  cellSeed(posteIdx, day) {
+    const pool = ['st1','st2','st3','st4','st5','st6','st7','st8','st9','st10'];
+    if (day % 6 === posteIdx % 6) return pool[(day + posteIdx) % pool.length];
+    return null;
+  }
+  initials(name) { return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase(); }
+
+  renderVals() {
+    const s = this.state;
+    const NAV = [
+      { id:'dashboard', label:'Tableau de bord', icon:'layout-dashboard' },
+      { id:'planning', label:'Planification mensuelle', icon:'calendar-days' },
+      { id:'structure', label:'Structure', icon:'folder-tree' },
+      { id:'directory', label:'Annuaire des stars', icon:'users' },
+      { id:'pending', label:'Comptes en attente', icon:'user-plus' },
+      { id:'announcements', label:'Annonces', icon:'megaphone' },
+    ];
+    const activePageGroup = (id) => id === 'directory' ? (s.page === 'directory') : s.page === id;
+
+    const navItems = NAV.map(n => {
+      const active = activePageGroup(n.id);
+      return {
+        ...n,
+        onClick: this.setPage(n.id),
+        bg: active ? 'var(--accent)' : 'transparent',
+        color: active ? '#fff' : 'var(--on-dark-muted)',
+      };
+    });
+
+    const dutyToday = this.dutyTodayData.map(d => {
+      const status = s.dutyStatus[d.starId];
+      const initials = d.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      return {
+        ...d, initials,
+        markServed: this.markDuty(d.starId, 'served'),
+        markNotServed: this.markDuty(d.starId, 'not_served'),
+        servedBg: status === 'served' ? '#2e7d32' : 'var(--pearl)',
+        servedColor: status === 'served' ? '#fff' : 'var(--ink-80)',
+        servedBorder: status === 'served' ? '#2e7d32' : 'var(--border)',
+        notServedBg: status === 'not_served' ? '#c0392b' : 'var(--pearl)',
+        notServedColor: status === 'not_served' ? '#fff' : 'var(--ink-80)',
+        notServedBorder: status === 'not_served' ? '#c0392b' : 'var(--border)',
+      };
+    });
+
+    const pendingCount = s.pendingAccounts.length;
+
+    // Planning grid
+    const daysInMonth = new Date(s.year, s.month, 0).getDate();
+    const days = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const wd = new Date(s.year, s.month - 1, d).getDay();
+      const isWeekend = wd === 0 || wd === 6;
+      const isSunday = wd === 0;
+      days.push({ num:d, label:String(d), isWeekend, isSunday, bg: isWeekend ? 'var(--bg-alt)' : 'var(--bg)', color: isWeekend ? 'var(--fg)' : 'var(--fg-muted)' });
+    }
+
+    const planningRows = [];
+    this.sections.forEach(sec => {
+      planningRows.push({ isSection:true, isPoste:false, label:sec.name, key:'sec-'+sec.id });
+      sec.postes.forEach(p => {
+        const cells = days.map(day => {
+          const key = p.id + '_' + day.num;
+          const effId = Object.prototype.hasOwnProperty.call(s.assignments, key) ? s.assignments[key] : this.cellSeed(p.idx, day.num);
+          const star = effId ? this.stars.find(st => st.id === effId) : null;
+          const value = star ? this.initials(star.name) : '';
+          return {
+            key, day: day.num, value,
+            bg: day.isWeekend ? 'var(--bg-alt)' : 'var(--bg)',
+            chipBg: value ? 'var(--accent)' : 'transparent',
+            chipColor: value ? '#fff' : 'var(--fg-muted)',
+            onClick: this.openCell(p.id, sec.name, sec.name + ' · ' + p.name, day.num, day.isSunday),
+          };
+        });
+        planningRows.push({ isSection:false, isPoste:true, label:p.name, sectionName:sec.name, id:p.id, idx:p.idx, key:p.id, cells });
+      });
+    });
+
+    let activeCell = null;
+    if (s.activeCell) {
+      const ac = s.activeCell;
+      const dayLabel = ac.day + ' ' + this.monthLabel(s.month, s.year).split(' ')[0];
+      const poste = planningRows.find(r => r.id === ac.posteId);
+      const effId = Object.prototype.hasOwnProperty.call(s.assignments, ac.key) ? s.assignments[ac.key] : (poste ? this.cellSeed(poste.idx, ac.day) : null);
+      const isOccupied = !!effId && !ac.forceCandidates;
+      let occupiedStarName = '', occupiedInitials = '', candidates = [];
+      if (isOccupied) {
+        const st = this.stars.find(x => x.id === effId);
+        occupiedStarName = st ? st.name : '';
+        occupiedInitials = st ? this.initials(st.name) : '';
+      } else {
+        candidates = this.stars.filter(st => st.sections.includes(ac.sectionName)).map(st => ({
+          name: st.name,
+          availText: 'Disponible · journée',
+          assign: this.requestAssign(ac.key, st.id, ac.isSunday, ac.posteLabel, dayLabel),
+        }));
+      }
+      activeCell = {
+        posteLabel: ac.posteLabel, dayLabel,
+        title: isOccupied ? 'Star assigné' : 'Stars disponibles',
+        isOccupied, occupiedStarName, occupiedInitials,
+        candidates, noCandidates: !isOccupied && candidates.length === 0,
+        retirer: this.retirerAssignation(ac.key),
+        changerDeStar: this.changerDeStar,
+      };
+    }
+
+    let pendingAssignment = null;
+    if (s.pendingAssignment) {
+      const pa = s.pendingAssignment;
+      const st = this.stars.find(x => x.id === pa.starId);
+      pendingAssignment = {
+        message: (st ? st.name : 'Ce star') + ' est déjà planifié sur 3 dimanches ce mois-ci. Continuer ?',
+        confirm: this.confirmAssignAnyway,
+        cancel: this.cancelAssignWarning,
+      };
+    }
+
+    // Structure
+    const sectionsTree = this.sections.map(sec => ({
+      ...sec,
+      count: sec.postes.length,
+      expanded: s.expanded[sec.id],
+      chevron: s.expanded[sec.id] ? 'chevron-down' : 'chevron-right',
+      toggle: this.toggleExpand(sec.id),
+    }));
+
+    // Directory
+    const sectionOptions = this.sections.map(sec => sec.name);
+    const filteredStars = this.stars
+      .filter(st => s.filterSection === 'all' || st.sections.includes(s.filterSection))
+      .map(st => ({
+        id: st.id, name: st.name,
+        sectionsLabel: st.sections.join(', '),
+        statusLabel: 'Actif',
+        sundaysWorked: st.sundaysWorked,
+        open: this.openStar(st.id),
+      }));
+
+    let starDetail = null;
+    if (s.selectedStar) {
+      const st = this.stars.find(x => x.id === s.selectedStar);
+      starDetail = {
+        name: st.name,
+        initials: st.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+        sectionsLabel: st.sections.join(', '),
+        sections: st.sections,
+        sundaysWorked: st.sundaysWorked,
+        availability: [
+          { date:'05/08/2026', creneau:'Matin' },
+          { date:'12/08/2026', creneau:'Soir' },
+          { date:'19/08/2026', creneau:'Journée' },
+        ],
+        statusHistory: [
+          { date:'28/07/2026', status:'A servi' },
+          { date:'21/07/2026', status:'A servi' },
+          { date:'14/07/2026', status:"N'a pas servi" },
+        ],
+      };
+    }
+
+    // Pending
+    const pendingAccounts = s.pendingAccounts.map(acc => ({
+      ...acc,
+      sectionChoices: this.sections.map(sec => {
+        const checked = !!acc.checks[sec.name];
+        return {
+          name: sec.name, checked,
+          toggle: this.togglePendingCheck(acc.id, sec.name),
+          border: checked ? 'var(--accent)' : 'var(--border)',
+          bg: checked ? 'var(--accent)' : 'var(--pearl)',
+          color: checked ? '#fff' : 'var(--ink-80)',
+        };
+      }),
+      validate: this.validateAccount(acc.id),
+      reject: this.rejectAccount(acc.id),
+    }));
+
+
+    const isMobile = s.authViewMode === 'mobile';
+    const auth = {
+      isMobile,
+      toggleDesktop: this.setAuthView('desktop'),
+      toggleMobile: this.setAuthView('mobile'),
+      desktopBg: !isMobile ? 'var(--accent)' : 'transparent',
+      desktopColor: !isMobile ? '#fff' : 'var(--ink-80)',
+      mobileBg: isMobile ? 'var(--accent)' : 'transparent',
+      mobileColor: isMobile ? '#fff' : 'var(--ink-80)',
+      frameWidth: isMobile ? '375px' : '460px',
+      frameBorder: isMobile ? '10px solid var(--tile-1)' : '1px solid var(--border)',
+      frameRadius: isMobile ? '36px' : 'var(--r-lg)',
+      framePadding: isMobile ? '28px 20px' : '40px 36px',
+    };
+
+    // Star flow
+    const isMobileStar = s.starViewMode === 'mobile';
+    const STAR_NAV = [
+      { id:'calendar', label:'Mon calendrier', shortLabel:'Calendrier', icon:'calendar-days' },
+      { id:'availability', label:'Mes disponibilités', shortLabel:'Dispos', icon:'clock' },
+      { id:'announcements', label:'Annonces', shortLabel:'Annonces', icon:'megaphone' },
+      { id:'notifications', label:'Notifications', shortLabel:'Notifs', icon:'bell' },
+    ];
+    const starPage = s.starFlow || 'calendar';
+    const starNavItems = STAR_NAV.map(n => {
+      const active = starPage === n.id;
+      return {
+        ...n,
+        onClick: this.setStarPage(n.id),
+        bg: active ? 'var(--accent)' : 'transparent',
+        color: active ? '#fff' : 'var(--on-dark-muted)',
+        tabColor: active ? 'var(--accent)' : 'var(--fg-muted)',
+      };
+    });
+    const starView = {
+      isMobile: isMobileStar,
+      isDesktop: !isMobileStar,
+      toggleDesktop: this.setStarView('desktop'),
+      toggleMobile: this.setStarView('mobile'),
+      desktopBg: !isMobileStar ? 'var(--accent)' : 'transparent',
+      desktopColor: !isMobileStar ? '#fff' : 'var(--ink-80)',
+      mobileBg: isMobileStar ? 'var(--accent)' : 'transparent',
+      mobileColor: isMobileStar ? '#fff' : 'var(--ink-80)',
+      frameWidth: isMobileStar ? '375px' : '900px',
+      frameBorder: isMobileStar ? '10px solid var(--tile-1)' : '1px solid var(--border)',
+      frameRadius: isMobileStar ? '36px' : 'var(--r-lg)',
+      frameDirection: 'row',
+    };
+    const weekdayLabels = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const statusLegend = [
+      { label:'Pas en service', dot:'var(--border)' },
+      { label:'De service', dot:'var(--accent)' },
+      { label:'A servi', dot:'#2e7d32' },
+      { label:"N'a pas servi", dot:'#c0392b' },
+      { label:'À confirmer', dot:'#b7791f' },
+    ];
+    const STATUS_STYLES = {
+      off: { label:'—', bg:'transparent', color:'var(--fg-muted)' },
+      on_duty: { label:'De service', bg:'rgba(22,104,227,0.12)', color:'var(--accent)' },
+      served: { label:'A servi', bg:'rgba(46,125,50,0.12)', color:'#2e7d32' },
+      not_served: { label:"N'a pas servi", bg:'rgba(192,57,43,0.12)', color:'#c0392b' },
+      to_confirm: { label:'À confirmer', bg:'rgba(183,121,31,0.12)', color:'#b7791f' },
+    };
+    const today = (s.starYear === 2026 && s.starMonth === 8) ? 4 : -1;
+    const starDaysInMonth = new Date(s.starYear, s.starMonth, 0).getDate();
+    const starFirstWd = (new Date(s.starYear, s.starMonth - 1, 1).getDay() + 6) % 7;
+    const starCalCells = [];
+    for (let i = 0; i < starFirstWd; i++) starCalCells.push({ blank:true, isDay:false, key:'b'+i });
+    for (let d = 1; d <= starDaysInMonth; d++) {
+      let statusKey;
+      if (today >= 0 && d < today) statusKey = (d % 4 === 0) ? 'not_served' : 'served';
+      else if (d === today) statusKey = 'on_duty';
+      else {
+        const r = d % 5;
+        statusKey = r === 1 ? 'on_duty' : r === 2 ? 'to_confirm' : 'off';
+      }
+      const st = STATUS_STYLES[statusKey];
+      const clickable = statusKey !== 'off';
+      starCalCells.push({
+        blank:false, isDay:true, key:'d'+d, day:d, label: st.label, bg: st.bg, color: st.color,
+        cursor: clickable ? 'pointer' : 'default',
+        onClick: clickable ? this.openShiftDetail(d) : undefined,
+      });
+    }
+
+    let starShiftDetail = null;
+    if (s.starActiveDay) {
+      const d = s.starActiveDay;
+      starShiftDetail = {
+        dateLabel: d + ' ' + this.monthLabel(s.starMonth, s.starYear),
+        section: 'Restauration', poste: 'Bar', horaire: '11h - 19h',
+        description: 'Service au bar, accueil des clients, tenue de caisse.',
+      };
+    }
+
+    // Availability (defaults to next month, then freely navigable)
+    const availM = s.availMonth, availY = s.availYear;
+    const availDaysInMonth = new Date(availY, availM, 0).getDate();
+    const availFirstWd = (new Date(availY, availM - 1, 1).getDay() + 6) % 7;
+    const availCells = [];
+    for (let i = 0; i < availFirstWd; i++) availCells.push({ blank:true, isDay:false, key:'ab'+i });
+    for (let d = 1; d <= availDaysInMonth; d++) {
+      const avKey = availY + '-' + availM + '-' + d;
+      const st = s.availability[avKey];
+      availCells.push({
+        blank:false, isDay:true, key:'ad'+d, day:d,
+        onClick: this.toggleAvailability(avKey),
+        bg: st === 'available' ? 'rgba(46,125,50,0.12)' : st === 'unavailable' ? 'rgba(192,57,43,0.12)' : 'var(--bg)',
+        border: st === 'available' ? '#2e7d32' : st === 'unavailable' ? '#c0392b' : 'var(--border)',
+        color: st === 'available' ? '#2e7d32' : st === 'unavailable' ? '#c0392b' : 'var(--ink)',
+      });
+    }
+
+    const starNotifications = this.starNotificationsData.map(n => ({
+      ...n,
+      dotColor: n.unread ? 'var(--accent)' : 'transparent',
+      weight: n.unread ? 600 : 400,
+    }));
+
+    const starPageTitles = { calendar:'Mon calendrier', availability:'Mes disponibilités', announcements:'Annonces', notifications:'Notifications' };
+
+    return {
+      navItems,
+      isAuthFlow: !!s.authPage,
+      isAppFlow: !s.authPage && !s.starFlow,
+      goToAuthDemo: this.goToAuthDemo,
+      auth,
+      isHome: s.authPage === 'home',
+      goHome: this.goHome,
+      isForgotPassword: s.authPage === 'forgot-password',
+      isForgotPasswordForm: s.authPage === 'forgot-password' && !s.forgotPasswordSent,
+      goForgotPassword: this.goForgotPassword,
+      forgotPasswordEmail: s.forgotPasswordEmail,
+      setForgotPasswordEmail: this.setForgotPasswordEmail,
+      forgotPasswordSent: s.forgotPasswordSent,
+      sendResetLink: this.sendResetLink,
+      isLogin: s.authPage === 'login',
+      isRoleSelector: s.authPage === 'role-selector',
+      goRoleSelector: this.goRoleSelector,
+      continueAsResponsable: this.continueAsResponsable,
+      continueAsStar: this.continueAsStar,
+      isAccountType: s.authPage === 'account-type',
+      signupRoles: s.signupRoles,
+      toggleRoleManager: this.toggleRoleManager,
+      toggleRoleStar: this.toggleRoleStar,
+      roleManagerBorder: s.signupRoles.manager ? 'var(--accent)' : 'var(--border)',
+      roleManagerBg: s.signupRoles.manager ? 'var(--bg-alt)' : 'var(--bg)',
+      roleStarBorder: s.signupRoles.star ? 'var(--accent)' : 'var(--border)',
+      roleStarBg: s.signupRoles.star ? 'var(--bg-alt)' : 'var(--bg)',
+      noRoleSelected: !s.signupRoles.manager && !s.signupRoles.star,
+      continueBg: (s.signupRoles.manager || s.signupRoles.star) ? 'var(--accent)' : 'var(--ink-48)',
+      goSignupIdentity: this.goSignupIdentity,
+      isSignupIdentity: s.authPage === 'signup-identity',
+      signupRoleSummary: (s.signupRoles.manager && s.signupRoles.star) ? 'Compte Responsable et Star.' : s.signupRoles.manager ? 'Compte Responsable.' : 'Compte Star — soumis à validation.',
+      createAccount: this.createAccount,
+      starRolePendingBanner: s.starRolePendingBanner,
+      isPendingValidation: s.authPage === 'pending-validation',
+      isWelcome: s.authPage === 'welcome',
+      goLogin: this.goLogin,
+      goAccountType: this.goAccountType,
+      goPendingValidation: this.goPendingValidation,
+      goWelcome: this.goWelcome,
+      exitToApp: this.exitToApp,
+      welcomeContinue: this.welcomeContinue,
+
+      isStarFlow: !!s.starFlow,
+      goToStarDemo: this.goToStarDemo,
+      backToResponsable: this.backToResponsable,
+      starView, starNavItems,
+      starPageTitle: starPageTitles[starPage],
+      isStarCalendar: starPage === 'calendar',
+      isStarAvailability: starPage === 'availability',
+      isStarAnnouncements: starPage === 'announcements',
+      isStarNotifications: starPage === 'notifications',
+      starMonthLabel: this.monthLabel(s.starMonth, s.starYear),
+      availMonthLabel: this.monthLabel(availM, availY),
+      prevStarMonth: this.prevStarMonth, nextStarMonth: this.nextStarMonth,
+      prevAvailMonth: this.prevAvailMonth, nextAvailMonth: this.nextAvailMonth,
+      weekdayLabels, statusLegend, starCalCells, availCells,
+      starShiftDetail, closeShiftDetail: this.closeShiftDetail, stopProp: this.stopProp,
+      submitAvailability: this.submitAvailability,
+      starNotifications,
+
+      isDashboard: s.page === 'dashboard',
+      isPlanning: s.page === 'planning',
+      isStructure: s.page === 'structure',
+      isDirectoryList: s.page === 'directory' && !s.selectedStar,
+      isDirectoryDetail: s.page === 'directory' && !!s.selectedStar,
+      isPending: s.page === 'pending',
+      isAnnouncements: s.page === 'announcements',
+
+      dutyToday,
+      unconfirmed: this.unconfirmed,
+      conflicts: this.conflicts,
+      pendingCount,
+      goToPending: this.setPage('pending'),
+
+      monthLabel: this.monthLabel(s.month, s.year),
+      prevMonth: this.prevMonth,
+      nextMonth: this.nextMonth,
+      duplicatePrevMonth: this.duplicatePrevMonth,
+      exportPlanning: this.exportPlanning,
+      days, planningRows,
+      activeCell, pendingAssignment,
+      closeCell: this.closeCell,
+      stopProp: this.stopProp,
+
+      sectionsTree,
+
+      sectionOptions, filterSection: s.filterSection, onFilterChange: this.onFilterChange,
+      filteredStars,
+      starDetail, closeStar: this.closeStar,
+
+      pendingAccounts, noPending: pendingAccounts.length === 0,
+
+      announcements: this.announcements.map(an => ({ ...an, edit: this.openEditAnnouncement(an) })),
+      openNewAnnouncement: this.openNewAnnouncement,
+      closeAnnouncementModal: this.closeAnnouncementModal,
+      announcementModal: s.announcementModal ? {
+        ...s.announcementModal,
+        heading: s.announcementModal.mode === 'edit' ? "Modifier l'annonce" : 'Nouvelle annonce',
+        saveLabel: s.announcementModal.mode === 'edit' ? 'Enregistrer' : 'Publier',
+        setTitle: this.setAnnouncementTitle,
+        setContent: this.setAnnouncementContent,
+        save: this.saveAnnouncement,
+      } : null,
+
+    };
+  }
+}
+
+</script>
+</body>
+</html>

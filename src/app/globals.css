@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Les tokens du design system (maquette/colors_and_type.css) seront intégrés
+ * ici et dans tailwind.config.ts à l'étape D.
+ */
