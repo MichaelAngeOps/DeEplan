@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/layout";
-import { Button, Field, Input } from "@/components/ui";
+import { Button, Field, Input, Spinner } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
@@ -15,6 +15,26 @@ function LoginForm() {
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [chargement, setChargement] = useState(false);
+
+  // `undefined` = vérification en cours ; `null` = non connecté ; string = email connecté.
+  const [dejaConnecte, setDejaConnecte] = useState<string | null | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setDejaConnecte(data.user?.email ?? null))
+      .catch(() => setDejaConnecte(null));
+  }, []);
+
+  const dest = `/apres-login${suite ? `?suite=${encodeURIComponent(suite)}` : ""}`;
+
+  async function changerDeCompte() {
+    await createClient().auth.signOut({ scope: "local" });
+    setDejaConnecte(null);
+    router.refresh();
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,9 +58,36 @@ function LoginForm() {
     }
 
     // Navigation complète : laisse le middleware poser les cookies de session.
-    const dest = `/apres-login${suite ? `?suite=${encodeURIComponent(suite)}` : ""}`;
     router.replace(dest);
     router.refresh();
+  }
+
+  if (dejaConnecte === undefined) {
+    return (
+      <AuthShell heading="Connexion">
+        <div className="flex justify-center py-6">
+          <Spinner />
+        </div>
+      </AuthShell>
+    );
+  }
+
+  if (dejaConnecte) {
+    return (
+      <AuthShell
+        heading="Vous êtes déjà connecté·e"
+        subheading={`Session active : ${dejaConnecte}`}
+      >
+        <div className="flex flex-col gap-3">
+          <Button fullWidth onClick={() => router.replace(dest)}>
+            Continuer vers mon espace
+          </Button>
+          <Button fullWidth variant="secondary" onClick={changerDeCompte}>
+            Se connecter avec un autre compte
+          </Button>
+        </div>
+      </AuthShell>
+    );
   }
 
   return (

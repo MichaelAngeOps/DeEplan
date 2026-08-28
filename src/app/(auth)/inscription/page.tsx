@@ -1,18 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Briefcase, ChevronLeft, Info, Star } from "lucide-react";
 import { AuthShell } from "@/components/layout";
-import { Button, Field, Input, Textarea } from "@/components/ui";
+import { Button, Field, Input, Spinner, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { sinscrire } from "@/lib/actions/inscription";
+import { createClient } from "@/lib/supabase/client";
 import type { Role } from "@/types/domain";
 
 type Etape = "roles" | "identite";
 
 export default function InscriptionPage() {
+  const router = useRouter();
   const [etape, setEtape] = useState<Etape>("roles");
+
+  // `undefined` = vérification en cours ; `null` = non connecté ; string = email connecté.
+  const [dejaConnecte, setDejaConnecte] = useState<string | null | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setDejaConnecte(data.user?.email ?? null))
+      .catch(() => setDejaConnecte(null));
+  }, []);
+
+  async function seDeconnecter() {
+    await createClient().auth.signOut({ scope: "local" });
+    setDejaConnecte(null);
+    router.refresh();
+  }
   const [estResponsable, setEstResponsable] = useState(false);
   const [estStar, setEstStar] = useState(false);
 
@@ -55,6 +76,34 @@ export default function InscriptionPage() {
     // succès = redirection serveur ; on n'arrive ici qu'en cas d'erreur
     setChargement(false);
     setErreur(res.erreur);
+  }
+
+  if (dejaConnecte === undefined) {
+    return (
+      <AuthShell heading="Créer un compte">
+        <div className="flex justify-center py-6">
+          <Spinner />
+        </div>
+      </AuthShell>
+    );
+  }
+
+  if (dejaConnecte) {
+    return (
+      <AuthShell
+        heading="Vous êtes déjà connecté·e"
+        subheading={`Session active : ${dejaConnecte}`}
+      >
+        <div className="flex flex-col gap-3">
+          <Button fullWidth onClick={() => router.replace("/apres-login")}>
+            Aller à mon espace
+          </Button>
+          <Button fullWidth variant="secondary" onClick={seDeconnecter}>
+            Me déconnecter pour créer un autre compte
+          </Button>
+        </div>
+      </AuthShell>
+    );
   }
 
   if (etape === "roles") {
