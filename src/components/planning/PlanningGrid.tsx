@@ -1,7 +1,9 @@
+"use client";
+
 import { initials } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { iso, joursDansMois } from "@/lib/dates";
-import { cleCase, type PlanningMois } from "@/lib/data/planning";
+import { iso, joursDansMois, jourSemaine } from "@/lib/dates";
+import { cleCase, type PlanningMois, type ShiftCase } from "@/lib/planning-shared";
 import type { StatutShift } from "@/types/domain";
 
 const CHIP: Record<StatutShift, string> = {
@@ -10,6 +12,15 @@ const CHIP: Record<StatutShift, string> = {
   na_pas_servi: "bg-danger/15 text-danger",
   a_confirmer: "bg-warning/15 text-warning",
 };
+
+export interface CelluleCliquee {
+  posteId: string;
+  posteNom: string;
+  sectionId: string;
+  sectionNom: string;
+  date: string;
+  shift: ShiftCase | null;
+}
 
 interface Jour {
   jour: number;
@@ -20,7 +31,7 @@ interface Jour {
 function joursDuMois(annee: number, mois: number): Jour[] {
   return Array.from({ length: joursDansMois(annee, mois) }, (_, i) => {
     const jour = i + 1;
-    const wd = new Date(annee, mois - 1, jour).getDay();
+    const wd = jourSemaine(iso(annee, mois, jour));
     return { jour, dateISO: iso(annee, mois, jour), weekend: wd === 0 || wd === 6 };
   });
 }
@@ -29,10 +40,12 @@ export function PlanningGrid({
   annee,
   mois,
   planning,
+  onCellClick,
 }: {
   annee: number;
   mois: number;
   planning: PlanningMois;
+  onCellClick: (c: CelluleCliquee) => void;
 }) {
   const jours = joursDuMois(annee, mois);
   const nbCols = jours.length + 1;
@@ -40,7 +53,7 @@ export function PlanningGrid({
   const vide = planning.sections.every((s) => s.postes.length === 0);
   if (vide) {
     return (
-      <p className="mt-6 rounded-lg border border-dashed border-hairline px-6 py-10 text-center text-caption text-ink-48">
+      <p className="mt-4 rounded-lg border border-dashed border-hairline px-6 py-10 text-center text-caption text-ink-48">
         Aucun poste à planifier. Créez des sections et des postes dans{" "}
         <span className="font-semibold text-ink">Structure</span>.
       </p>
@@ -76,6 +89,7 @@ export function PlanningGrid({
               jours={jours}
               cases={planning.cases}
               nbCols={nbCols}
+              onCellClick={onCellClick}
             />
           ))}
         </tbody>
@@ -89,11 +103,13 @@ function SectionRows({
   jours,
   cases,
   nbCols,
+  onCellClick,
 }: {
   section: PlanningMois["sections"][number];
   jours: Jour[];
   cases: PlanningMois["cases"];
   nbCols: number;
+  onCellClick: (c: CelluleCliquee) => void;
 }) {
   return (
     <>
@@ -121,31 +137,49 @@ function SectionRows({
             {poste.nom}
           </td>
           {jours.map((j) => {
-            const c = cases[cleCase(poste.id, j.dateISO)];
+            const shift = cases[cleCase(poste.id, j.dateISO)] ?? null;
             return (
               <td
                 key={j.dateISO}
                 className={cn(
-                  "border-b border-l border-hairline px-1 py-1.5 text-center",
+                  "border-b border-l border-hairline p-0 text-center",
                   j.weekend && "bg-parchment/50",
                 )}
               >
-                {c && (
-                  <span
-                    title={
-                      (c.starNom ?? "Star retiré") +
-                      (c.heureDebut && c.heureFin
-                        ? ` · ${c.heureDebut.slice(0, 5)}–${c.heureFin.slice(0, 5)}`
-                        : "")
-                    }
-                    className={cn(
-                      "inline-flex h-6 w-6 items-center justify-center rounded-xs text-[10.5px] font-semibold",
-                      CHIP[c.statut],
-                    )}
-                  >
-                    {c.starNom ? initials(c.starNom) : "?"}
-                  </span>
-                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    onCellClick({
+                      posteId: poste.id,
+                      posteNom: poste.nom,
+                      sectionId: section.id,
+                      sectionNom: section.nom,
+                      date: j.dateISO,
+                      shift,
+                    })
+                  }
+                  aria-label={`${poste.nom}, ${j.jour} — ${
+                    shift ? (shift.starNom ?? "assigné") : "libre"
+                  }`}
+                  className="flex h-9 w-full items-center justify-center px-1 transition-colors hover:bg-accent/5"
+                >
+                  {shift && (
+                    <span
+                      title={
+                        (shift.starNom ?? "Star retiré") +
+                        (shift.heureDebut && shift.heureFin
+                          ? ` · ${shift.heureDebut.slice(0, 5)}–${shift.heureFin.slice(0, 5)}`
+                          : "")
+                      }
+                      className={cn(
+                        "inline-flex h-6 w-6 items-center justify-center rounded-xs text-[10.5px] font-semibold",
+                        CHIP[shift.statut],
+                      )}
+                    >
+                      {shift.starNom ? initials(shift.starNom) : "?"}
+                    </span>
+                  )}
+                </button>
               </td>
             );
           })}

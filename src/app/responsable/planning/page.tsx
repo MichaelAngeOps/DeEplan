@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Banner, Legend } from "@/components/ui";
-import { PlanningGrid } from "@/components/planning/PlanningGrid";
+import { PlanningBoard } from "@/components/planning/PlanningBoard";
 import { PlanningMonthNav } from "@/components/planning/PlanningMonthNav";
 import { getAcces } from "@/lib/auth";
 import { getPlanningMois } from "@/lib/data/planning";
@@ -60,7 +60,10 @@ export default async function PlanningPage({
         <PlanningMonthNav annee={annee} mois={mois} />
         <Legend items={LEGENDE} />
       </div>
-      <PlanningGrid annee={annee} mois={mois} planning={planning} />
+      <PlanningBoard annee={annee} mois={mois} planning={planning} />
+      <p className="mt-3 text-fine text-ink-48">
+        Cliquez sur une case pour assigner, changer ou retirer un star.
+      </p>
     </>
   );
 }

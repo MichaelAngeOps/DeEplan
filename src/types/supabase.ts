@@ -147,8 +147,8 @@ export type Database = {
           date: string;
           date_creation: string;
           description: string | null;
-          heure_debut: string;
-          heure_fin: string;
+          heure_debut: string | null;
+          heure_fin: string | null;
           id: string;
           poste_id: string;
           star_id: string;
@@ -159,8 +159,8 @@ export type Database = {
           date: string;
           date_creation?: string;
           description?: string | null;
-          heure_debut: string;
-          heure_fin: string;
+          heure_debut?: string | null;
+          heure_fin?: string | null;
           id?: string;
           poste_id: string;
           star_id: string;
@@ -171,8 +171,8 @@ export type Database = {
           date?: string;
           date_creation?: string;
           description?: string | null;
-          heure_debut?: string;
-          heure_fin?: string;
+          heure_debut?: string | null;
+          heure_fin?: string | null;
           id?: string;
           poste_id?: string;
           star_id?: string;

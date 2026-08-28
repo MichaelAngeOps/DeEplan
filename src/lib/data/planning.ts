@@ -2,28 +2,11 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getStructure } from "@/lib/data/structure";
-import type { SectionAvecPostes, StatutShift } from "@/types/domain";
+import { cleCase, type PlanningMois, type ShiftCase } from "@/lib/planning-shared";
+import type { StatutShift } from "@/types/domain";
 
-export interface ShiftCase {
-  id: string;
-  starId: string;
-  /** `null` si le star n'est plus lisible (retiré de la section). */
-  starNom: string | null;
-  statut: StatutShift;
-  heureDebut: string | null;
-  heureFin: string | null;
-}
-
-export interface PlanningMois {
-  sections: SectionAvecPostes[];
-  /** Clé : `${posteId}_${YYYY-MM-DD}`. */
-  cases: Record<string, ShiftCase>;
-}
-
-/** Clé d'une case du planning. */
-export function cleCase(posteId: string, dateISO: string): string {
-  return `${posteId}_${dateISO}`;
-}
+export type { PlanningMois, ShiftCase };
+export { cleCase };
 
 /**
  * Planning du département sur l'intervalle `[debut, fin[` : structure

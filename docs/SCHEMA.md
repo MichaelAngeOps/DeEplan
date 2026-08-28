@@ -54,13 +54,15 @@ Le **département d'un star** se déduit : `star_sections → sections → depar
 | `star_id` | uuid → utilisateurs | |
 | `poste_id` | uuid → postes | |
 | `date` | date | |
-| `heure_debut`, `heure_fin` | time **NOT NULL** | portées par le shift |
+| `heure_debut`, `heure_fin` | time **nullable** (migration `20260828052524`, Lot 4b) | horaires optionnels, saisis à l'assignation |
 | `description` | text nullable | |
 | `statut` | text | CHECK `('de_service','a_servi','na_pas_servi','a_confirmer')`, default `de_service` |
 | `cree_par` | uuid → utilisateurs | |
 | `date_creation` | timestamptz | |
 
-Index `(poste_id, date)` et `(star_id, date)` — **non uniques** (voir #2).
+Index `(star_id, date)` — non unique. Index **unique `(poste_id, date)`**
+(`plannings_poste_id_date_key`, migration `20260828052524`, Lot 4b) : 1 star max
+par poste et par jour → #2 résolu.
 
 ### `annonces`
 `id` PK · `departement_id` → departements · `responsable_id` → utilisateurs · `titre` · `contenu` · `date_publication` timestamptz.
@@ -93,13 +95,12 @@ Index `(utilisateur_id, lu)`.
 
 ## Points d'attention pour l'implémentation
 
-1. **Horaires** — décision produit #3 initiale (« portés par le poste ») écartée :
-   `postes` n'a pas de colonnes d'horaire, `plannings.heure_debut`/`heure_fin`
-   sont NOT NULL. **Décision retenue (2026-08-28) : les horaires sont saisis à
-   l'assignation** (dans la modale d'assignation du planning).
-2. **Pas d'unicité `plannings(poste_id, date)`** : rien n'empêche 2 stars sur le
-   même poste le même jour. L'app doit l'empêcher (ou l'autoriser sciemment).
-   *(À gérer côté app au Lot 4 — planification.)*
+1. **Horaires** — décision produit #3 initiale (« portés par le poste ») écartée.
+   **Décision retenue (2026-08-28, Lot 4b)** : horaires **optionnels**, saisis à
+   l'assignation. `plannings.heure_debut`/`heure_fin` passés **nullable**
+   (migration `20260828052524`). ✅ Résolu.
+2. **Unicité `plannings(poste_id, date)`** : index unique ajouté (migration
+   `20260828052524`, Lot 4b). 1 star max par poste et par jour. ✅ Résolu.
 3. **Inscription** : après `auth.signUp`, l'app doit `insert` dans `utilisateurs`,
    puis `roles_utilisateurs` (1 ligne par rôle, `statut='en_attente'` — désormais
    imposé par RLS). Pour un responsable, `insert` dans `departements` → accès

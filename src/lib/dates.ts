@@ -51,3 +51,14 @@ export function aujourdhuiISO(): string {
   const d = new Date();
   return iso(d.getFullYear(), d.getMonth() + 1, d.getDate());
 }
+
+/** Jour de semaine d'une date ISO : 0 = dimanche … 6 = samedi (calcul local, sans fuseau). */
+export function jourSemaine(dateISO: string): number {
+  const [a, m, j] = dateISO.split("-").map(Number);
+  return new Date(a, m - 1, j).getDay();
+}
+
+/** Vrai si la date ISO tombe un dimanche. */
+export function estDimanche(dateISO: string): boolean {
+  return jourSemaine(dateISO) === 0;
+}
