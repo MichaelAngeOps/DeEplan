@@ -71,6 +71,27 @@ export const getAcces = cache(async (): Promise<Acces | null> => {
   };
 });
 
+/**
+ * Département de l'utilisateur courant : celui qu'il dirige (responsable) ou
+ * celui de ses sections (star). `null` si aucun.
+ */
+export const getDepartementId = cache(async (): Promise<string | null> => {
+  const acces = await getAcces();
+  if (!acces) return null;
+  if (acces.departementId) return acces.departementId;
+  if (acces.star && acces.star.sectionIds.length > 0) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("sections")
+      .select("departement_id")
+      .in("id", acces.star.sectionIds)
+      .limit(1)
+      .maybeSingle();
+    return data?.departement_id ?? null;
+  }
+  return null;
+});
+
 /** Destination par défaut selon les droits (utilisé après login). */
 export function routePardefaut(acces: Acces): string {
   const starValide = acces.star?.statut === "valide";
