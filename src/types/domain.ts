@@ -23,6 +23,7 @@ export type DisponibiliteRow = Tables<"disponibilites">;
 export type PlanningRow = Tables<"plannings">;
 export type AnnonceRow = Tables<"annonces">;
 export type NotificationRow = Tables<"notifications">;
+export type PushSubscriptionRow = Tables<"push_subscriptions">;
 
 // --------------------------------------------------------------------------
 // Unions littérales (contraintes CHECK du schéma)

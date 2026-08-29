@@ -12,6 +12,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "DeEplan",
   description: "Gestion du planning d'équipe",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "DeEplan", statusBarStyle: "default" },
 };
 
 export default function RootLayout({

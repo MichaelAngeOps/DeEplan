@@ -231,6 +231,44 @@ export type Database = {
           },
         ];
       };
+      push_subscriptions: {
+        Row: {
+          auth: string | null;
+          date_creation: string;
+          endpoint: string;
+          id: string;
+          p256dh: string | null;
+          type: string;
+          user_id: string;
+        };
+        Insert: {
+          auth?: string | null;
+          date_creation?: string;
+          endpoint: string;
+          id?: string;
+          p256dh?: string | null;
+          type?: string;
+          user_id: string;
+        };
+        Update: {
+          auth?: string | null;
+          date_creation?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string | null;
+          type?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "utilisateurs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       demandes_departement: {
         Row: {
           date_demande: string;
@@ -367,6 +405,22 @@ export type Database = {
       stars_planifies_le: {
         Args: { p_stars: string[]; p_date: string; p_exclure_poste: string | null };
         Returns: string[];
+      };
+      push_subscriptions_pour: {
+        Args: { p_user: string };
+        Returns: {
+          auth: string | null;
+          date_creation: string;
+          endpoint: string;
+          id: string;
+          p256dh: string | null;
+          type: string;
+          user_id: string;
+        }[];
+      };
+      supprimer_abonnement_push: {
+        Args: { p_endpoint: string };
+        Returns: undefined;
       };
     };
     Enums: Record<never, never>;

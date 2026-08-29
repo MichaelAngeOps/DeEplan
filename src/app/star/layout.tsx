@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { StarShell } from "@/components/layout";
 import { ProfilFooter } from "@/components/layout/ProfilFooter";
+import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
 import { getAcces, getUser, getUtilisateur } from "@/lib/auth";
 import { getNbNotificationsNonLues } from "@/lib/data/notifications";
 
@@ -43,6 +44,7 @@ export default async function StarLayout({
       }
       badges={{ "/star/notifications": nbNonLues }}
     >
+      {user && <RealtimeNotifications userId={user.id} />}
       {children}
     </StarShell>
   );

@@ -55,6 +55,6 @@ export const config = {
      * - favicon, fichiers d'images
      * - metrics / health / .well-known (sondes de monitoring)
      */
-    "/((?!_next/static|_next/image|favicon.ico|metrics|health|healthz|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|manifest.json|metrics|health|healthz|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

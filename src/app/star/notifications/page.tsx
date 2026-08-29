@@ -1,5 +1,6 @@
 import { Banner } from "@/components/ui";
 import { NotificationsClient } from "@/components/notifications/NotificationsClient";
+import { PushToggle } from "@/components/notifications/PushToggle";
 import { getUser } from "@/lib/auth";
 import { getNotifications } from "@/lib/data/notifications";
 
@@ -30,6 +31,9 @@ export default async function NotificationsPage() {
       <h2 className="font-display text-[20px] font-semibold tracking-[-0.3px] text-ink">
         Notifications
       </h2>
+      <div className="mt-4 max-w-[560px]">
+        <PushToggle />
+      </div>
       <NotificationsClient notifications={notifications} />
     </>
   );

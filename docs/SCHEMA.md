@@ -85,7 +85,16 @@ par poste et par jour → #2 résolu.
 
 ### `notifications`
 `id` PK · `utilisateur_id` → utilisateurs · `type` text (libre) · `contenu` text · `lu` bool default false · `date_creation`.
-Index `(utilisateur_id, lu)`.
+Index `(utilisateur_id, lu)`. **Publiée dans `supabase_realtime`** (Lot A7d) →
+mise à jour temps réel de la pastille (RLS appliquée).
+
+### `push_subscriptions` (Lot A7d — migration `20260829233412`)
+`id` PK · `user_id` → utilisateurs (CASCADE) · `type` CHECK `('web','fcm','apns')`
+default `web` · `endpoint` · `p256dh` / `auth` (web uniquement) · `date_creation`.
+**Unique** `(user_id, endpoint)`. RLS : l'utilisateur gère les siens.
+Lecture serveur (envoi de push) via la fonction SECURITY DEFINER
+`push_subscriptions_pour(user)` (soi-même ou responsable d'un dept du star).
+`type` prépare l'ajout de FCM (Android) / APNs (iOS) sans refonte.
 
 ## Fonctions RLS (SECURITY DEFINER, STABLE)
 
