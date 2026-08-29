@@ -95,6 +95,6 @@ export function routePardefaut(acces: Acces): string {
   if (acces.star) {
     return starValide ? "/star/calendrier" : "/compte-en-attente";
   }
-  // Aucun rôle exploitable : renvoyer vers l'attente (cas inscription star pure).
-  return "/compte-en-attente";
+  // Aucun rôle : profil incomplet (typiquement après une connexion Google).
+  return "/completer-profil";
 }

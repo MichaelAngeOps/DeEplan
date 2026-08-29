@@ -10,6 +10,9 @@ export default async function CompteEnAttentePage() {
   const acces = await getAcces();
   if (!acces) redirect("/login");
 
+  // Profil incomplet (connexion Google sans rôle) → finaliser d'abord.
+  if (!acces.star && !acces.estResponsable) redirect("/completer-profil");
+
   // Déjà un accès exploitable → on n'a rien à faire ici.
   if (acces.estResponsable || acces.star?.statut === "valide") {
     redirect("/apres-login");

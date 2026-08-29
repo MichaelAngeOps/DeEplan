@@ -12,9 +12,9 @@ export default async function StarLayout({
   const acces = await getAcces();
   if (!acces) redirect("/login");
 
-  // Pas de rôle star, ou star non encore validé → écran d'attente.
+  // Pas de rôle star (ou profil incomplet) → `/apres-login` route correctement.
   if (!acces.star) {
-    redirect(acces.estResponsable ? "/responsable/dashboard" : "/compte-en-attente");
+    redirect(acces.estResponsable ? "/responsable/dashboard" : "/apres-login");
   }
   if (acces.star.statut !== "valide") redirect("/compte-en-attente");
 

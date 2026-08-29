@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Briefcase, ChevronLeft, Info, Star } from "lucide-react";
 import { AuthShell } from "@/components/layout";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Button, Field, Input, Spinner, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { sinscrire } from "@/lib/actions/inscription";
@@ -133,6 +134,17 @@ export default function InscriptionPage() {
         >
           Continuer
         </Button>
+
+        <div className="my-4 flex items-center gap-3 text-fine text-ink-48">
+          <span className="h-px flex-1 bg-hairline" />
+          ou
+          <span className="h-px flex-1 bg-hairline" />
+        </div>
+        <GoogleButton />
+        <p className="mt-2 text-center text-fine text-ink-48">
+          Avec Google, vous choisirez vos rôles juste après.
+        </p>
+
         <p className="mt-5 text-center text-caption text-ink-48">
           Déjà un compte ?{" "}
           <Link href="/login" className="font-semibold text-accent">

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/layout";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Button, Field, Input, Spinner } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
@@ -126,6 +127,13 @@ function LoginForm() {
           {chargement ? "Connexion…" : "Se connecter"}
         </Button>
       </form>
+
+      <div className="my-4 flex items-center gap-3 text-fine text-ink-48">
+        <span className="h-px flex-1 bg-hairline" />
+        ou
+        <span className="h-px flex-1 bg-hairline" />
+      </div>
+      <GoogleButton suite={suite} />
 
       <div className="mt-5 flex flex-col items-center gap-2 text-center text-caption text-ink-48">
         <Link href="/mot-de-passe-oublie" className="font-semibold text-accent">
