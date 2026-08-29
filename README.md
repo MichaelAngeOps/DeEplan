@@ -52,6 +52,21 @@ npm run lint     # ESLint
 node --env-file=.env.local scripts/check-supabase.mjs   # test de connexion Supabase
 ```
 
+## Déploiement (Vercel)
+
+1. Sur [vercel.com](https://vercel.com) → **Add New… → Project** → importer le
+   dépôt GitHub. Next.js est détecté automatiquement (aucune config).
+2. Dans **Environment Variables**, ajouter (pour *Production*, *Preview* et
+   *Development*) :
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. **Deploy**.
+4. Après le premier déploiement, mettre à jour :
+   - **Supabase → Authentication → URL Configuration** : *Site URL* =
+     l'URL Vercel ; *Redirect URLs* += `https://<domaine-vercel>/auth/callback`
+   - **Google Cloud → Credentials → OAuth client → Authorized JavaScript
+     origins** += `https://<domaine-vercel>`
+
 ## Structure
 
 ```
