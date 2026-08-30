@@ -29,6 +29,8 @@ jobs:
         working-directory: desktop
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -36,10 +38,10 @@ jobs:
 
       - run: npm install
 
+      # Pas de GH_TOKEN ici : sinon electron-builder tente de publier et
+      # crashe sur updateInfoBuilder. La Release est gérée par le job `release`.
       - name: Build
         run: npx electron-builder ${{ matrix.args }} --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
