@@ -4,6 +4,7 @@
   "private": true,
   "description": "DeEplan — application de bureau (Electron)",
   "author": "DeEplan",
+  "repository": "https://github.com/MichaelAngeOps/DeEplan",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

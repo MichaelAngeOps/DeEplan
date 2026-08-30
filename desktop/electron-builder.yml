@@ -2,6 +2,10 @@ appId: com.deeplan.desktop
 productName: DeEplan
 copyright: DeEplan
 
+# Pas d'auto-update ni de publication par electron-builder : la Release GitHub
+# est gérée par le workflow. (Évite le crash `updateInfoBuilder` sans remote.)
+publish: null
+
 directories:
   output: dist
   buildResources: build
