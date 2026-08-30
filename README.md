@@ -67,6 +67,13 @@ node --env-file=.env.local scripts/check-supabase.mjs   # test de connexion Supa
    - **Google Cloud → Credentials → OAuth client → Authorized JavaScript
      origins** += `https://<domaine-vercel>`
 
+## Application de bureau (Electron)
+
+Une coquille Electron dans [`desktop/`](./desktop/) charge l'app déployée →
+installateurs Windows / macOS / Linux. Voir [`desktop/README.md`](./desktop/README.md).
+Le build 3 plateformes se fait via GitHub Actions
+(`.github/workflows/desktop.yml`).
+
 ## Structure
 
 ```

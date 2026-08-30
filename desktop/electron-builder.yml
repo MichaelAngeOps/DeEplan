@@ -1,0 +1,28 @@
+appId: com.deeplan.desktop
+productName: DeEplan
+copyright: DeEplan
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - main.js
+  - package.json
+
+# Pas de signature (compte Apple/certificat Windows non requis pour cette phase).
+mac:
+  target: dmg
+  category: public.app-category.productivity
+  identity: null
+
+win:
+  target: nsis
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+linux:
+  target: AppImage
+  category: Office
