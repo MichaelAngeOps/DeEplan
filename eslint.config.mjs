@@ -20,6 +20,8 @@ const eslintConfig = [
       "next-env.d.ts",
       // Fichiers de maquette : runtime de prototypage tiers, pas du code applicatif (prompt §6)
       "maquette/**",
+      // Coquille Electron en CommonJS, hors code applicatif Next.js.
+      "desktop/**",
     ],
   },
 ];
