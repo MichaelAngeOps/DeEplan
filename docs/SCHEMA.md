@@ -1,7 +1,8 @@
 # Schéma Supabase — référence
 
 > Relevé du schéma réel du projet `deeplan-prod` le **2026-08-28** (Postgres 17.6).
-> Le schéma est **géré hors de ce dépôt** (prompt §7 : « ne le recrée pas »).
+> Schéma complet et rejouable : `supabase/schema/schema-complet.sql` (relevé le
+> 2026-11-06), à compléter par les migrations postérieures à `20261106064650`.
 > Types générés : `src/types/supabase.ts`. Ce document = vue lisible + points
 > d'attention pour l'implémentation.
 

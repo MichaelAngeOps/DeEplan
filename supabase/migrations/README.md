@@ -1,12 +1,22 @@
 # Migrations Supabase
 
 Le **schéma initial** (`20260827221806_initial_schema`) a été appliqué **hors de
-ce dépôt** (fourni via le prompt, prompt §7 : « ne le recrée pas »). Il n'est pas
-reproduit ici.
+ce dépôt** et n'est pas reproduit ici.
 
 Ce dossier ne suit que les migrations **postérieures**, appliquées sur le projet
 `deeplan-prod`. Elles sont posées via l'outil MCP Supabase (`apply_migration`) et
 le fichier `.sql` est déposé ici pour l'historique et le rollback.
+
+## Recréer la base
+
+Ces migrations seules ne suffisent pas. Sur un projet Supabase **neuf** :
+
+1. Appliquer `supabase/schema/schema-complet.sql`, qui inclut tout jusqu'à `20261106064650`.
+2. Appliquer ensuite, dans l'ordre, les migrations dont la version est postérieure à `20261106064650`.
+
+Ne jamais appliquer `schema-complet.sql` sur une base existante.
+
+## Historique
 
 | Version | Nom | Objet |
 |---|---|---|
