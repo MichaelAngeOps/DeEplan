@@ -1,0 +1,36 @@
+name: Contrôles
+
+# Vérifie chaque envoi sur main et chaque demande de fusion.
+# Aucun secret ici : les tests utilisent une base temporaire, jamais la production.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Types
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          # Valeurs fictives : le build ne contacte pas Supabase.
+          NEXT_PUBLIC_SUPABASE_URL: https://exemple.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: cle-fictive-pour-le-build
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: cle-fictive-pour-le-build

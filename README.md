@@ -48,9 +48,16 @@ npm run dev      # serveur de développement (http://localhost:3000)
 npm run build    # build de production
 npm run start    # sert le build de production
 npm run lint     # ESLint
+npm run typecheck # vérification des types
+npm test         # tests automatiques, dans un Postgres temporaire
 
 node --env-file=.env.local scripts/check-supabase.mjs   # test de connexion Supabase
 ```
+
+`npm test` ne contacte jamais Supabase. La base de test est recréée en mémoire à partir de
+`supabase/schema/schema-complet.sql` et des migrations postérieures. Toute nouvelle règle
+d'accès ou règle métier doit y ajouter son test. Les mêmes contrôles tournent sur GitHub à
+chaque push sur `main` (`.github/workflows/ci.yml`).
 
 ## Déploiement (Vercel)
 
