@@ -106,11 +106,143 @@ export type Database = {
           },
         ];
       };
+      formulaire_questions: {
+        Row: {
+          formulaire_id: string;
+          id: string;
+          libelle: string;
+          obligatoire: boolean;
+          options: Json | null;
+          ordre: number;
+          type: string;
+        };
+        Insert: {
+          formulaire_id: string;
+          id?: string;
+          libelle: string;
+          obligatoire?: boolean;
+          options?: Json | null;
+          ordre: number;
+          type: string;
+        };
+        Update: {
+          formulaire_id?: string;
+          id?: string;
+          libelle?: string;
+          obligatoire?: boolean;
+          options?: Json | null;
+          ordre?: number;
+          type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formulaire_questions_formulaire_id_fkey";
+            columns: ["formulaire_id"];
+            isOneToOne: false;
+            referencedRelation: "formulaires";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      formulaire_reponses: {
+        Row: {
+          date_modification: string;
+          date_soumission: string;
+          formulaire_id: string;
+          id: string;
+          reponses: Json;
+          star_id: string;
+        };
+        Insert: {
+          date_modification?: string;
+          date_soumission?: string;
+          formulaire_id: string;
+          id?: string;
+          reponses?: Json;
+          star_id: string;
+        };
+        Update: {
+          date_modification?: string;
+          date_soumission?: string;
+          formulaire_id?: string;
+          id?: string;
+          reponses?: Json;
+          star_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formulaire_reponses_formulaire_id_fkey";
+            columns: ["formulaire_id"];
+            isOneToOne: false;
+            referencedRelation: "formulaires";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formulaire_reponses_star_id_fkey";
+            columns: ["star_id"];
+            isOneToOne: false;
+            referencedRelation: "utilisateurs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      formulaires: {
+        Row: {
+          date_creation: string;
+          date_fermeture: string | null;
+          date_publication: string | null;
+          departement_id: string;
+          description: string | null;
+          id: string;
+          responsable_id: string;
+          statut: string;
+          titre: string;
+        };
+        Insert: {
+          date_creation?: string;
+          date_fermeture?: string | null;
+          date_publication?: string | null;
+          departement_id: string;
+          description?: string | null;
+          id?: string;
+          responsable_id: string;
+          statut?: string;
+          titre: string;
+        };
+        Update: {
+          date_creation?: string;
+          date_fermeture?: string | null;
+          date_publication?: string | null;
+          departement_id?: string;
+          description?: string | null;
+          id?: string;
+          responsable_id?: string;
+          statut?: string;
+          titre?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "formulaires_departement_id_fkey";
+            columns: ["departement_id"];
+            isOneToOne: false;
+            referencedRelation: "departements";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "formulaires_responsable_id_fkey";
+            columns: ["responsable_id"];
+            isOneToOne: false;
+            referencedRelation: "utilisateurs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
           contenu: string;
           date_creation: string;
           id: string;
+          lien: string | null;
           lu: boolean;
           type: string;
           utilisateur_id: string;
@@ -119,6 +251,7 @@ export type Database = {
           contenu: string;
           date_creation?: string;
           id?: string;
+          lien?: string | null;
           lu?: boolean;
           type: string;
           utilisateur_id: string;
@@ -127,6 +260,7 @@ export type Database = {
           contenu?: string;
           date_creation?: string;
           id?: string;
+          lien?: string | null;
           lu?: boolean;
           type?: string;
           utilisateur_id?: string;
@@ -402,6 +536,8 @@ export type Database = {
       is_any_responsable: { Args: Record<never, never>; Returns: boolean };
       is_responsable_of: { Args: { dept_id: string }; Returns: boolean };
       is_star_in_departement: { Args: { dept_id: string }; Returns: boolean };
+      star_a_repondu: { Args: { p_formulaire: string }; Returns: boolean };
+      star_peut_repondre: { Args: { p_formulaire: string }; Returns: boolean };
       stars_planifies_le: {
         Args: { p_stars: string[]; p_date: string; p_exclure_poste: string | null };
         Returns: string[];

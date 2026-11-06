@@ -9,6 +9,8 @@ export interface NotificationItem {
   contenu: string;
   lu: boolean;
   date: string;
+  /** Chemin interne ouvert au clic, si la notification est cliquable. */
+  lien: string | null;
 }
 
 /** Notifications de l'utilisateur, les plus récentes d'abord. RLS : les siennes. */
@@ -17,7 +19,7 @@ export const getNotifications = cache(
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, type, contenu, lu, date_creation")
+      .select("id, type, contenu, lu, date_creation, lien")
       .eq("utilisateur_id", userId)
       .order("date_creation", { ascending: false })
       .limit(50);
@@ -30,6 +32,7 @@ export const getNotifications = cache(
       contenu: n.contenu,
       lu: n.lu,
       date: n.date_creation,
+      lien: n.lien,
     }));
   },
 );

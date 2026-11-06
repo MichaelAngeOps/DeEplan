@@ -24,6 +24,9 @@ export type PlanningRow = Tables<"plannings">;
 export type AnnonceRow = Tables<"annonces">;
 export type NotificationRow = Tables<"notifications">;
 export type PushSubscriptionRow = Tables<"push_subscriptions">;
+export type FormulaireRow = Tables<"formulaires">;
+export type FormulaireQuestionRow = Tables<"formulaire_questions">;
+export type FormulaireReponseRow = Tables<"formulaire_reponses">;
 
 // --------------------------------------------------------------------------
 // Unions littérales (contraintes CHECK du schéma)
@@ -48,6 +51,18 @@ export type StatutShift =
   | "a_servi"
   | "na_pas_servi"
   | "a_confirmer";
+
+/** `formulaires.statut` — cycle `brouillon` → `publie` → `ferme` (trigger de garde). */
+export type StatutFormulaire = "brouillon" | "publie" | "ferme";
+
+/** `formulaire_questions.type` — CHECK du schéma. */
+export type TypeQuestion =
+  | "texte_court"
+  | "texte_long"
+  | "choix_unique"
+  | "choix_multiple"
+  | "oui_non"
+  | "date";
 
 // --------------------------------------------------------------------------
 // Vues composites (assemblées côté app)

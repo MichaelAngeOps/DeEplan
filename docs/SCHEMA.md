@@ -84,9 +84,23 @@ par poste et par jour → #2 résolu.
 `id` PK · `departement_id` → departements · `responsable_id` → utilisateurs · `titre` · `contenu` · `date_publication` timestamptz.
 
 ### `notifications`
-`id` PK · `utilisateur_id` → utilisateurs · `type` text (libre) · `contenu` text · `lu` bool default false · `date_creation`.
+`id` PK · `utilisateur_id` → utilisateurs · `type` text (libre) · `contenu` text · `lu` bool default false · `date_creation` · `lien` text nullable (A9a, chemin interne uniquement, CHECK `^/[^/\\]`).
 Index `(utilisateur_id, lu)`. **Publiée dans `supabase_realtime`** (Lot A7d) →
 mise à jour temps réel de la pastille (RLS appliquée).
+
+### `formulaires` (Lot A9a — migration `20261106041019`)
+`id` PK · `departement_id` → departements (CASCADE) · `responsable_id` → utilisateurs (CASCADE) · `titre` (1–120) · `description` nullable (≤ 2000) · `statut` CHECK `('brouillon','publie','ferme')` default `brouillon` · `date_creation` · `date_publication` · `date_fermeture`.
+Trigger `formulaires_garde` : cycle `brouillon → publie → ferme` sans retour, ≥ 1 question pour publier, titre et description figés dès la publication, dates posées par le trigger.
+RLS : lecture par le responsable du département, les stars du département (hors brouillon) et le star ayant répondu ; suppression limitée aux brouillons.
+
+### `formulaire_questions` (Lot A9a)
+`id` PK · `formulaire_id` → formulaires (CASCADE) · `ordre` · `libelle` (1–500) · `type` CHECK `('texte_court','texte_long','choix_unique','choix_multiple','oui_non','date')` · `options` jsonb (tableau de 2 à 50 pour les choix, sinon null) · `obligatoire` bool. **Unique** `(formulaire_id, ordre)`.
+RLS : écriture par le responsable uniquement tant que le formulaire est en brouillon.
+
+### `formulaire_reponses` (Lot A9a)
+`id` PK · `formulaire_id` → formulaires (CASCADE) · `star_id` → utilisateurs (CASCADE) · `reponses` jsonb `{ question_id: valeur }` · `date_soumission` · `date_modification`. **Unique** `(formulaire_id, star_id)`.
+Trigger `formulaire_reponses_valider` : question connue, obligatoires présentes, valeur conforme au type, dates posées par le trigger.
+RLS : le star lit toujours sa réponse, et l'écrit seulement si le formulaire est publié et qu'il est dans le département ; le responsable du département lit sans modifier ; aucune suppression directe.
 
 ### `push_subscriptions` (Lot A7d — migration `20260829233412`)
 `id` PK · `user_id` → utilisateurs (CASCADE) · `type` CHECK `('web','fcm','apns')`

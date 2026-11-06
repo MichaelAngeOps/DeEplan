@@ -8,7 +8,8 @@ export type TypeNotification =
   | "shift_modifie"
   | "shift_retire"
   | "annonce"
-  | "departement_cree";
+  | "departement_cree"
+  | "formulaire";
 
 // --------------------------------------------------------------------------
 // Web push (best-effort, aucun échec ne remonte)
@@ -32,12 +33,14 @@ const TITRE_PUSH: Partial<Record<TypeNotification, string>> = {
   shift_modifie: "Shift modifié",
   shift_retire: "Shift retiré",
   annonce: "Nouvelle annonce",
+  formulaire: "Nouveau formulaire",
 };
 
 async function envoyerPush(
   utilisateurIds: string[],
   type: TypeNotification,
   contenu: string,
+  lien?: string,
 ): Promise<void> {
   if (!vapidConfig() || utilisateurIds.length === 0) return;
   const titre = TITRE_PUSH[type] ?? "DeEplan";
@@ -45,7 +48,7 @@ async function envoyerPush(
   const payload = JSON.stringify({
     title: titre,
     body: corps,
-    url: "/star/notifications",
+    url: lien ?? "/star/notifications",
     tag: type,
   });
 
@@ -84,21 +87,25 @@ async function envoyerPush(
 /**
  * Crée une notification pour un utilisateur, puis envoie un push. **Best-effort**
  * — aucune erreur ne fait échouer l'action métier appelante.
+ *
+ * `lien` : chemin interne (`/star/…`) ouvert au clic sur la notification ou le
+ * push. La base refuse tout lien externe.
  */
 export async function notifier(
   utilisateurId: string,
   type: TypeNotification,
   contenu: string,
+  lien?: string,
 ): Promise<void> {
   try {
     const supabase = await createClient();
     await supabase
       .from("notifications")
-      .insert({ utilisateur_id: utilisateurId, type, contenu });
+      .insert({ utilisateur_id: utilisateurId, type, contenu, lien: lien ?? null });
   } catch {
     // ignoré
   }
-  await envoyerPush([utilisateurId], type, contenu);
+  await envoyerPush([utilisateurId], type, contenu, lien);
 }
 
 /** Notifie en lot plusieurs utilisateurs (même type / contenu). Best-effort. */
@@ -106,6 +113,7 @@ export async function notifierPlusieurs(
   utilisateurIds: string[],
   type: TypeNotification,
   contenu: string,
+  lien?: string,
 ): Promise<void> {
   if (utilisateurIds.length === 0) return;
   try {
@@ -117,10 +125,11 @@ export async function notifierPlusieurs(
           utilisateur_id,
           type,
           contenu,
+          lien: lien ?? null,
         })),
       );
   } catch {
     // ignoré
   }
-  await envoyerPush(utilisateurIds, type, contenu);
+  await envoyerPush(utilisateurIds, type, contenu, lien);
 }
