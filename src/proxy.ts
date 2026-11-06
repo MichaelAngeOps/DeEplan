@@ -23,7 +23,7 @@ function isIgnore(pathname: string): boolean {
   return IGNORES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (isIgnore(request.nextUrl.pathname)) return NextResponse.next();
 
   const { response, user, error } = await updateSession(request);

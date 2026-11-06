@@ -18,21 +18,19 @@ export function PushToggle() {
   const [enCours, setEnCours] = useState(false);
 
   useEffect(() => {
-    if (
-      !VAPID ||
-      typeof window === "undefined" ||
-      !("serviceWorker" in navigator) ||
-      !("PushManager" in window) ||
-      !("Notification" in window)
-    ) {
-      setEtat("non_supporte");
-      return;
-    }
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((reg) => reg.pushManager.getSubscription())
-      .then((sub) => setEtat(sub ? "actif" : "inactif"))
-      .catch(() => setEtat("non_supporte"));
+    const supporte =
+      Boolean(VAPID) &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window;
+    const etatInitial: Promise<Etat> = supporte
+      ? navigator.serviceWorker
+          .register("/sw.js")
+          .then((reg) => reg.pushManager.getSubscription())
+          .then((sub): Etat => (sub ? "actif" : "inactif"))
+          .catch((): Etat => "non_supporte")
+      : Promise.resolve("non_supporte");
+    etatInitial.then(setEtat);
   }, []);
 
   async function activer() {

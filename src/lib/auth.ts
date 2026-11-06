@@ -27,7 +27,7 @@ export interface Acces {
 /**
  * Utilisateur `auth` courant, ou `null`. Vérification **locale** du JWT via
  * `getClaims()` (ES256 + JWKS) — pas d'appel `/auth/v1/user` par rendu (le
- * middleware a déjà validé + rafraîchi la session pour cette requête).
+ * proxy a déjà validé + rafraîchi la session pour cette requête).
  */
 export const getUser = cache(async (): Promise<UtilisateurAuth | null> => {
   const supabase = await createClient();

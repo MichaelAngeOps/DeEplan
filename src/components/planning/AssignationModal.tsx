@@ -41,15 +41,26 @@ export function AssignationModal({
 
   useEffect(() => {
     if (mode !== "choix") return;
-    setCandidats(null);
-    setErreur(null);
-    chargerCandidats(cellule.sectionId, cellule.posteId, cellule.date).then(
-      (res) => {
+    let annule = false;
+    chargerCandidats(cellule.sectionId, cellule.posteId, cellule.date)
+      .then((res) => {
+        if (annule) return;
         if (res.ok) setCandidats(res.candidats);
         else setErreur(res.erreur);
-      },
-    );
+      })
+      .catch(() => {
+        if (!annule) setErreur("Chargement des candidats impossible.");
+      });
+    return () => {
+      annule = true;
+    };
   }, [mode, cellule.sectionId, cellule.posteId, cellule.date]);
+
+  function ouvrirChoix() {
+    setCandidats(null);
+    setErreur(null);
+    setMode("choix");
+  }
 
   async function assigner(starId: string, forcerDimanche = false) {
     setEnCours(starId);
@@ -125,7 +136,7 @@ export function AssignationModal({
             </p>
           )}
           <div className="mt-4 flex flex-col gap-2">
-            <Button variant="secondary" onClick={() => setMode("choix")}>
+            <Button variant="secondary" onClick={ouvrirChoix}>
               Changer de star
             </Button>
             <Button

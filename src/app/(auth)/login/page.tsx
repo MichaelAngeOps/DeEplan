@@ -58,7 +58,7 @@ function LoginForm() {
       return;
     }
 
-    // Navigation complète : laisse le middleware poser les cookies de session.
+    // Navigation complète : laisse le proxy poser les cookies de session.
     router.replace(dest);
     router.refresh();
   }

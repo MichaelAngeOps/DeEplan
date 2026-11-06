@@ -17,7 +17,7 @@ Hiérarchie : Responsable → Département → Sections → Postes. Un Star peut
 | | |
 |---|---|
 | Langage | TypeScript |
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | UI | React 19, Tailwind CSS v3 |
 | Backend | Supabase (PostgreSQL, Auth, RLS) |
 

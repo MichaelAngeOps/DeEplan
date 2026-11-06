@@ -7,8 +7,8 @@ import type { Database } from "@/types/supabase";
  * Client Supabase côté serveur (Server Components, Route Handlers, Server Actions).
  *
  * Le `setAll` peut échouer depuis un Server Component (cookies en lecture seule) —
- * sans conséquence tant que le middleware rafraîchit la session à chaque navigation
- * (`src/middleware.ts`).
+ * sans conséquence tant que le proxy rafraîchit la session à chaque navigation
+ * (`src/proxy.ts`).
  */
 export async function createClient() {
   const cookieStore = await cookies();
@@ -24,7 +24,7 @@ export async function createClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // Server Component : ignoré (le middleware s'en charge).
+          // Server Component : ignoré (le proxy s'en charge).
         }
       },
     },
