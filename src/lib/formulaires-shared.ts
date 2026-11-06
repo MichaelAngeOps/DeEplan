@@ -125,6 +125,93 @@ export function validerFormulaire(
   return aDesErreurs ? erreurs : null;
 }
 
+// --------------------------------------------------------------------------
+// Réponses d'un star
+// --------------------------------------------------------------------------
+
+/** Texte, option ou date : `string` · choix multiple : `string[]` · oui/non : `boolean`. */
+export type ValeurReponse = string | string[] | boolean;
+export type Reponses = Record<string, ValeurReponse>;
+
+export const REPONSE_COURTE_MAX = 500;
+export const REPONSE_LONGUE_MAX = 5000;
+
+export interface QuestionAValider {
+  id: string;
+  type: TypeQuestion;
+  options: string[];
+  obligatoire: boolean;
+}
+
+function estVide(v: ValeurReponse | undefined): boolean {
+  if (v === undefined) return true;
+  if (typeof v === "string") return v.trim() === "";
+  if (Array.isArray(v)) return v.length === 0;
+  return false;
+}
+
+function dateValide(v: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const d = new Date(`${v}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
+}
+
+function erreurReponse(q: QuestionAValider, v: ValeurReponse): string | null {
+  const invalide = "Cette réponse n'est pas valide.";
+  switch (q.type) {
+    case "texte_court":
+      if (typeof v !== "string") return invalide;
+      return v.length > REPONSE_COURTE_MAX
+        ? `La réponse ne doit pas dépasser ${REPONSE_COURTE_MAX} caractères.`
+        : null;
+    case "texte_long":
+      if (typeof v !== "string") return invalide;
+      return v.length > REPONSE_LONGUE_MAX
+        ? `La réponse ne doit pas dépasser ${REPONSE_LONGUE_MAX} caractères.`
+        : null;
+    case "choix_unique":
+      return typeof v === "string" && q.options.includes(v) ? null : invalide;
+    case "choix_multiple":
+      return Array.isArray(v) &&
+        new Set(v).size === v.length &&
+        v.every((o) => q.options.includes(o))
+        ? null
+        : invalide;
+    case "oui_non":
+      return typeof v === "boolean" ? null : invalide;
+    case "date":
+      return typeof v === "string" && dateValide(v) ? null : "Cette date n'est pas valide.";
+  }
+}
+
+/** Erreurs par identifiant de question. Objet vide si tout est valide. */
+export function validerReponses(
+  questions: QuestionAValider[],
+  reponses: Reponses,
+): Record<string, string> {
+  const erreurs: Record<string, string> = {};
+  for (const q of questions) {
+    const v = reponses[q.id];
+    if (estVide(v)) {
+      if (q.obligatoire) erreurs[q.id] = "Cette question est obligatoire.";
+      continue;
+    }
+    const erreur = erreurReponse(q, v as ValeurReponse);
+    if (erreur) erreurs[q.id] = erreur;
+  }
+  return erreurs;
+}
+
+/** Retire les réponses vides et les espaces autour des textes. */
+export function reponsesNettoyees(reponses: Reponses): Reponses {
+  const resultat: Reponses = {};
+  for (const [id, v] of Object.entries(reponses)) {
+    if (estVide(v)) continue;
+    resultat[id] = typeof v === "string" ? v.trim() : v;
+  }
+  return resultat;
+}
+
 /** Date lisible, toujours à l'heure d'Ottawa-Gatineau (identique serveur et client). */
 export function dateFormulaire(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-CA", {

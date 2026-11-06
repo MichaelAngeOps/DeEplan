@@ -2,6 +2,7 @@ import {
   Bell,
   Building2,
   CalendarDays,
+  ClipboardList,
   Clock,
   FolderTree,
   LayoutDashboard,
@@ -33,5 +34,6 @@ export const STAR_NAV: NavEntry[] = [
   { href: "/star/calendrier", label: "Mon calendrier", shortLabel: "Calendrier", icon: CalendarDays },
   { href: "/star/disponibilites", label: "Mes disponibilités", shortLabel: "Dispos", icon: Clock },
   { href: "/star/mes-departements", label: "Mes départements", shortLabel: "Départs", icon: Building2 },
+  { href: "/star/formulaires", label: "Formulaires", shortLabel: "Formulaires", icon: ClipboardList },
   { href: "/star/notifications", label: "Notifications", shortLabel: "Notifs", icon: Bell },
 ];
