@@ -23,7 +23,7 @@ Hiérarchie : Responsable → Département → Sections → Postes. Un Star peut
 
 ## Prérequis
 
-- Node.js ≥ 18.18 (recommandé : 22 LTS)
+- Node.js ≥ 20.9 (recommandé : 22 LTS)
 - npm
 - Un projet Supabase avec le schéma appliqué
 
