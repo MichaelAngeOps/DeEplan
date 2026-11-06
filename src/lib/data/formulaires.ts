@@ -212,6 +212,71 @@ export const getFormulaireStar = cache(
   },
 );
 
+// --------------------------------------------------------------------------
+// Fiche d'un star, côté Responsable
+// --------------------------------------------------------------------------
+
+export interface FormulaireDuStar {
+  id: string;
+  titre: string;
+  statut: "publie" | "ferme";
+  datePublication: string | null;
+  /** Date de la dernière réponse du star, ou `null` s'il n'a pas répondu. */
+  dateReponse: string | null;
+}
+
+export interface ReponseDuStar {
+  reponses: Reponses;
+  dateModification: string;
+}
+
+/** Formulaires publiés ou fermés du département, avec la réponse éventuelle du star. */
+export const getFormulairesDuStar = cache(
+  async (departementId: string, starId: string): Promise<FormulaireDuStar[]> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("formulaires")
+      .select(
+        "id, titre, statut, date_publication, formulaire_reponses(star_id, date_modification)",
+      )
+      .eq("departement_id", departementId)
+      .neq("statut", "brouillon")
+      .eq("formulaire_reponses.star_id", starId)
+      .order("date_publication", { ascending: false });
+
+    if (error) throw new Error("Chargement des formulaires impossible.");
+
+    return (data ?? []).map((f) => ({
+      id: f.id,
+      titre: f.titre,
+      statut: f.statut as "publie" | "ferme",
+      datePublication: f.date_publication,
+      dateReponse:
+        f.formulaire_reponses.find((r) => r.star_id === starId)?.date_modification ?? null,
+    }));
+  },
+);
+
+/** Réponse d'un star à un formulaire, ou `null` s'il n'a pas répondu. */
+export const getReponseDuStar = cache(
+  async (formulaireId: string, starId: string): Promise<ReponseDuStar | null> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("formulaire_reponses")
+      .select("reponses, date_modification")
+      .eq("formulaire_id", formulaireId)
+      .eq("star_id", starId)
+      .maybeSingle();
+
+    if (error) throw new Error("Chargement de la réponse impossible.");
+    if (!data) return null;
+    return {
+      reponses: data.reponses as Reponses,
+      dateModification: data.date_modification,
+    };
+  },
+);
+
 /** Formulaire complet du département, ou `null` s'il n'existe pas ou n'en fait pas partie. */
 export const getFormulaire = cache(
   async (

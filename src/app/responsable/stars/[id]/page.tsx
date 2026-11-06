@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Avatar, Card, StatusBadge } from "@/components/ui";
 import { FicheStarActions } from "@/components/annuaire/FicheStarActions";
+import { FormulairesFicheStar } from "@/components/formulaires/FormulairesFicheStar";
 import { getAcces } from "@/lib/auth";
 import { getFicheStar } from "@/lib/data/annuaire";
+import { getFormulairesDuStar, type FormulaireDuStar } from "@/lib/data/formulaires";
 
 function dateFr(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", {
@@ -25,6 +27,15 @@ export default async function FicheStarPage({
   const { id } = await params;
   const fiche = await getFicheStar(acces.departementId, id);
   if (!fiche) notFound();
+
+  let formulaires: FormulaireDuStar[] | null = null;
+  try {
+    const tous = await getFormulairesDuStar(acces.departementId, id);
+    // Star retiré : seuls les formulaires qu'il a remplis restent pertinents.
+    formulaires = fiche.statut === "valide" ? tous : tous.filter((f) => f.dateReponse);
+  } catch {
+    // Message affiché dans la carte.
+  }
 
   return (
     <>
@@ -114,6 +125,8 @@ export default async function FicheStarPage({
             ))
           )}
         </Card>
+
+        <FormulairesFicheStar starId={fiche.id} formulaires={formulaires} />
       </div>
     </>
   );

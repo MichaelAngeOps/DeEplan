@@ -212,6 +212,16 @@ export function reponsesNettoyees(reponses: Reponses): Reponses {
   return resultat;
 }
 
+/** Date saisie par un star (`AAAA-MM-JJ`), sans décalage de fuseau. */
+export function dateReponseLisible(valeur: string): string {
+  return new Date(`${valeur}T12:00:00Z`).toLocaleDateString("fr-CA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 /** Date lisible, toujours à l'heure d'Ottawa-Gatineau (identique serveur et client). */
 export function dateFormulaire(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-CA", {
