@@ -7,6 +7,7 @@ import { Button, Card } from "@/components/ui";
 import { fermerFormulaire } from "@/lib/actions/formulaires";
 import type { FormulaireDetail } from "@/lib/data/formulaires";
 import { LIBELLE_TYPE, dateFormulaire, estTypeChoix } from "@/lib/formulaires-shared";
+import { ActionsFormulaireFerme } from "./ActionsFormulaireFerme";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { StatutFormulaireBadge } from "./StatutFormulaireBadge";
 
@@ -60,6 +61,10 @@ export function FormulaireDetailResponsable({
           {formulaire.nbReponses}
         </p>
       </Card>
+
+      {formulaire.statut === "ferme" && (
+        <ActionsFormulaireFerme id={formulaire.id} titre={formulaire.titre} />
+      )}
 
       <Card className="mt-5" title={`Questions (${formulaire.questions.length})`}>
         <ol className="flex flex-col">

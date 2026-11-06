@@ -3,8 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { getAcces, getUser } from "@/lib/auth";
 import {
+  getFormulaire,
+  getReponsesFormulaire,
+  type FormulaireDetail,
+  type ReponseNominative,
+} from "@/lib/data/formulaires";
+import {
   estTypeChoix,
   optionsNettoyees,
+  titreConfirmeCorrespond,
   validerFormulaire,
   type ErreursFormulaire,
   type FormulaireSaisie,
@@ -213,7 +220,70 @@ export async function fermerFormulaire(id: string): Promise<ActionResultat> {
   return { ok: true };
 }
 
-/** Supprime un brouillon. Un formulaire publié ou fermé est conservé. */
+export type ResultatPartage =
+  | { ok: true; formulaire: FormulaireDetail; reponses: ReponseNominative[] }
+  | { ok: false; erreur: string };
+
+/** Données du PDF d'un formulaire fermé, réservées au responsable du département. */
+export async function chargerPartageFormulaire(id: string): Promise<ResultatPartage> {
+  const g = await garde();
+  if (!g.ok) return g;
+
+  try {
+    const formulaire = await getFormulaire(g.departementId, id);
+    if (!formulaire) return { ok: false, erreur: "Ce formulaire n'existe plus." };
+    if (formulaire.statut !== "ferme")
+      return { ok: false, erreur: "Fermez le formulaire avant de le partager." };
+    return { ok: true, formulaire, reponses: await getReponsesFormulaire(id) };
+  } catch {
+    return { ok: false, erreur: "Chargement des réponses impossible. Réessayez." };
+  }
+}
+
+/**
+ * Supprime définitivement un formulaire fermé et toutes ses réponses. Le titre
+ * retapé est revérifié ici. La base retire aussi les notifications liées.
+ */
+export async function supprimerFormulaireFerme(
+  id: string,
+  titreConfirme: string,
+): Promise<ActionResultat> {
+  const g = await garde();
+  if (!g.ok) return g;
+
+  const supabase = await createClient();
+  const { data: formulaire, error: erreurLecture } = await supabase
+    .from("formulaires")
+    .select("titre, statut")
+    .eq("id", id)
+    .eq("departement_id", g.departementId)
+    .maybeSingle();
+  if (erreurLecture) return { ok: false, erreur: "Suppression impossible. Réessayez." };
+  if (!formulaire) return { ok: false, erreur: "Ce formulaire n'existe plus." };
+  if (formulaire.statut !== "ferme")
+    return { ok: false, erreur: "Fermez le formulaire avant de le supprimer." };
+  if (!titreConfirmeCorrespond(titreConfirme, formulaire.titre))
+    return { ok: false, erreur: "Le titre saisi ne correspond pas." };
+
+  const { data, error } = await supabase
+    .from("formulaires")
+    .delete()
+    .eq("id", id)
+    .eq("departement_id", g.departementId)
+    .eq("statut", "ferme")
+    .select("id");
+  if (error) return { ok: false, erreur: "Suppression impossible. Réessayez." };
+  if (!data?.length) return { ok: false, erreur: "Ce formulaire n'existe plus." };
+
+  revalider();
+  revalidatePath("/responsable/stars", "layout");
+  revalidatePath("/star/formulaires");
+  revalidatePath("/star/notifications");
+  revalidatePath("/star", "layout"); // pastille de navigation
+  return { ok: true };
+}
+
+/** Supprime un brouillon. Un formulaire publié doit d'abord être fermé. */
 export async function supprimerBrouillon(id: string): Promise<ActionResultat> {
   const g = await garde();
   if (!g.ok) return g;

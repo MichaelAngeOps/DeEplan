@@ -22,6 +22,7 @@ le fichier `.sql` est déposé ici pour l'historique et le rollback.
 | 20260828205352 | fn_stars_planifies_le_batch | `stars_planifies_le(stars[], date, exclure_poste)` — avertissement inter-départements à l'assignation |
 | 20260829233412 | push_subscriptions_et_realtime_notifications | table `push_subscriptions` (type web/fcm/apns) + RPC de lecture (SECURITY DEFINER) + `notifications` ajoutée à la publication Realtime (Lot A7d) |
 | 20261106041019 | formulaires_et_lien_notifications | **A9a** — tables `formulaires`, `formulaire_questions`, `formulaire_reponses`, triggers de garde et de validation, RLS, colonne `notifications.lien` |
+| 20261106064650 | formulaires_suppression_si_ferme | **A10** — suppression d'un formulaire brouillon ou fermé (réponses en cascade), trigger retirant les notifications liées |
 
 Régénérer les types après toute migration :
 `npx supabase gen types typescript --project-id wjsvygzatbguwzzzvopv > src/types/supabase.ts`

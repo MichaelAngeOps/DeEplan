@@ -66,6 +66,17 @@ function cleComparaison(v: string): string {
     .replace(/[̀-ͯ]/g, "");
 }
 
+/**
+ * Confirmation de suppression : le titre retapé doit correspondre, sans tenir compte
+ * des majuscules, des accents, des espaces en trop ni du style d'apostrophe.
+ */
+export function titreConfirmeCorrespond(saisie: string, titre: string): boolean {
+  const normaliser = (v: string) =>
+    cleComparaison(v.replace(/\s+/g, " ")).replace(/[’‘ʼ]/g, "'");
+  const cible = normaliser(titre);
+  return cible !== "" && normaliser(saisie) === cible;
+}
+
 /** Options non vides, sans espaces superflus. */
 export function optionsNettoyees(options: string[]): string[] {
   return options.map(propre).filter(Boolean);

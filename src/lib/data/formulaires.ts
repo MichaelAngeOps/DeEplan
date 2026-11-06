@@ -257,6 +257,33 @@ export const getFormulairesDuStar = cache(
   },
 );
 
+export interface ReponseNominative extends ReponseDuStar {
+  starNom: string;
+}
+
+/** Toutes les réponses d'un formulaire, triées par nom de star (pour le PDF). */
+export const getReponsesFormulaire = cache(
+  async (formulaireId: string): Promise<ReponseNominative[]> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("formulaire_reponses")
+      .select("reponses, date_modification, utilisateurs(prenom, nom)")
+      .eq("formulaire_id", formulaireId);
+
+    if (error) throw new Error("Chargement des réponses impossible.");
+
+    return (data ?? [])
+      .map((r) => ({
+        starNom: r.utilisateurs
+          ? `${r.utilisateurs.prenom} ${r.utilisateurs.nom}`.trim()
+          : "Star",
+        reponses: r.reponses as Reponses,
+        dateModification: r.date_modification,
+      }))
+      .sort((a, b) => a.starNom.localeCompare(b.starNom, "fr"));
+  },
+);
+
 /** Réponse d'un star à un formulaire, ou `null` s'il n'a pas répondu. */
 export const getReponseDuStar = cache(
   async (formulaireId: string, starId: string): Promise<ReponseDuStar | null> => {

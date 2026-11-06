@@ -91,7 +91,7 @@ mise à jour temps réel de la pastille (RLS appliquée).
 ### `formulaires` (Lot A9a — migration `20261106041019`)
 `id` PK · `departement_id` → departements (CASCADE) · `responsable_id` → utilisateurs (CASCADE) · `titre` (1–120) · `description` nullable (≤ 2000) · `statut` CHECK `('brouillon','publie','ferme')` default `brouillon` · `date_creation` · `date_publication` · `date_fermeture`.
 Trigger `formulaires_garde` : cycle `brouillon → publie → ferme` sans retour, ≥ 1 question pour publier, titre et description figés dès la publication, dates posées par le trigger.
-RLS : lecture par le responsable du département, les stars du département (hors brouillon) et le star ayant répondu ; suppression limitée aux brouillons.
+RLS : lecture par le responsable du département, les stars du département (hors brouillon) et le star ayant répondu ; suppression limitée aux brouillons et aux formulaires fermés (A10, migration `20261106064650`). Réponses effacées en cascade ; trigger `formulaires_retirer_notifications` : retire les notifications liées.
 
 ### `formulaire_questions` (Lot A9a)
 `id` PK · `formulaire_id` → formulaires (CASCADE) · `ordre` · `libelle` (1–500) · `type` CHECK `('texte_court','texte_long','choix_unique','choix_multiple','oui_non','date')` · `options` jsonb (tableau de 2 à 50 pour les choix, sinon null) · `obligatoire` bool. **Unique** `(formulaire_id, ordre)`.
