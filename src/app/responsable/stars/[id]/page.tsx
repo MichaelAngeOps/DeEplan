@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { Avatar, Card, StatusBadge } from "@/components/ui";
 import { FicheStarActions } from "@/components/annuaire/FicheStarActions";
 import { FormulairesFicheStar } from "@/components/formulaires/FormulairesFicheStar";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getFicheStar } from "@/lib/data/annuaire";
 import { getFormulairesDuStar, type FormulaireDuStar } from "@/lib/data/formulaires";
@@ -33,7 +34,8 @@ export default async function FicheStarPage({
     const tous = await getFormulairesDuStar(acces.departementId, id);
     // Star retiré : seuls les formulaires qu'il a remplis restent pertinents.
     formulaires = fiche.statut === "valide" ? tous : tous.filter((f) => f.dateReponse);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/stars/[id]", e);
     // Message affiché dans la carte.
   }
 

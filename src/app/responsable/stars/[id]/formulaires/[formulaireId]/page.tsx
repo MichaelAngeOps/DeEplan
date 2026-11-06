@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { Banner } from "@/components/ui";
 import { ReponsesStar } from "@/components/formulaires/ReponsesStar";
 import { StatutFormulaireBadge } from "@/components/formulaires/StatutFormulaireBadge";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getFicheStar } from "@/lib/data/annuaire";
 import {
@@ -35,7 +36,8 @@ export default async function ReponsesFormulaireStarPage({
   try {
     formulaire = await getFormulaire(acces.departementId, formulaireId);
     reponse = formulaire ? await getReponseDuStar(formulaireId, starId) : null;
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/stars/[id]/formulaires/[formulaireId]", e);
     return (
       <Banner tone="danger" className="max-w-[760px]">
         Impossible de charger les réponses. Rechargez la page.

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { ValidationsClient } from "@/components/validations/ValidationsClient";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getStructure } from "@/lib/data/structure";
 import { getComptesEnAttente } from "@/lib/data/validations";
@@ -18,7 +19,8 @@ export default async function ValidationsPage() {
       getComptesEnAttente(acces.departementId),
       getStructure(acces.departementId),
     ]);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/validations", e);
     return (
       <>
         <Entete count={0} />

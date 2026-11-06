@@ -1,5 +1,6 @@
 import { Banner } from "@/components/ui";
 import { DisponibilitesClient } from "@/components/disponibilites/DisponibilitesClient";
+import { journaliserErreur } from "@/lib/journal";
 import { getUser } from "@/lib/auth";
 import { getDisponibilites, getJoursAvecShift } from "@/lib/data/disponibilites";
 import { moisDecale, premierDuMois } from "@/lib/dates";
@@ -32,7 +33,8 @@ export default async function DisponibilitesPage() {
       getDisponibilites(user.id, debut, fin),
       getJoursAvecShift(user.id, debut, fin),
     ]);
-  } catch {
+  } catch (e) {
+    journaliserErreur("star/disponibilites", e);
     return (
       <>
         <h2 className="font-display text-[20px] font-semibold tracking-[-0.3px] text-ink">

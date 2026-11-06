@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { AnnuaireClient } from "@/components/annuaire/AnnuaireClient";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getAnnuaire } from "@/lib/data/annuaire";
 
@@ -13,7 +14,8 @@ export default async function StarsPage() {
   let stars;
   try {
     stars = await getAnnuaire(acces.departementId);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/stars", e);
     return (
       <>
         <Entete />

@@ -1,5 +1,6 @@
 import { Banner } from "@/components/ui";
 import { CalendrierStar } from "@/components/calendrier/CalendrierStar";
+import { journaliserErreur } from "@/lib/journal";
 import { getUser } from "@/lib/auth";
 import { getShiftsStar } from "@/lib/data/calendrier-star";
 import { iso, moisDecale } from "@/lib/dates";
@@ -35,7 +36,8 @@ export default async function CalendrierPage({
       iso(annee, mois, 1),
       moisDecale(annee, mois, 1),
     );
-  } catch {
+  } catch (e) {
+    journaliserErreur("star/calendrier", e);
     return (
       <>
         <h2 className="font-display text-[20px] font-semibold tracking-[-0.3px] text-ink">

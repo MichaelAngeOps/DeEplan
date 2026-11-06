@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces, getUser } from "@/lib/auth";
 import {
   getFormulaire,
@@ -235,7 +236,8 @@ export async function chargerPartageFormulaire(id: string): Promise<ResultatPart
     if (formulaire.statut !== "ferme")
       return { ok: false, erreur: "Fermez le formulaire avant de le partager." };
     return { ok: true, formulaire, reponses: await getReponsesFormulaire(id) };
-  } catch {
+  } catch (e) {
+    journaliserErreur("actions/formulaires", e);
     return { ok: false, erreur: "Chargement des réponses impossible. Réessayez." };
   }
 }

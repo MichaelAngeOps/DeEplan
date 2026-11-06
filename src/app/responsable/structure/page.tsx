@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { StructureClient } from "@/components/structure/StructureClient";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getStructure } from "@/lib/data/structure";
 
@@ -13,7 +14,8 @@ export default async function StructurePage() {
   let sections;
   try {
     sections = await getStructure(acces.departementId);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/structure", e);
     return (
       <>
         <h1 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.4px] text-ink">

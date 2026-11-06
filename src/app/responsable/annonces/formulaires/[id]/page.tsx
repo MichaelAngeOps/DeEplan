@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { FormulaireDetailResponsable } from "@/components/formulaires/FormulaireDetailResponsable";
 import { FormulaireEditeur } from "@/components/formulaires/FormulaireEditeur";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getFormulaire, type FormulaireDetail } from "@/lib/data/formulaires";
 
@@ -20,7 +21,8 @@ export default async function FormulairePage({
   let formulaire: FormulaireDetail | null;
   try {
     formulaire = await getFormulaire(acces.departementId, id);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/annonces/formulaires/[id]", e);
     return (
       <Banner tone="danger" className="max-w-[760px]">
         Impossible de charger ce formulaire. Rechargez la page.

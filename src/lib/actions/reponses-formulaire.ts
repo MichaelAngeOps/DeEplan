@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces, getUser } from "@/lib/auth";
 import { getFormulaireStar } from "@/lib/data/formulaires";
 import {
@@ -29,7 +30,8 @@ export async function enregistrerReponses(
   let formulaire;
   try {
     formulaire = await getFormulaireStar(user.id, acces.star.sectionIds, formulaireId);
-  } catch {
+  } catch (e) {
+    journaliserErreur("actions/reponses-formulaire", e);
     return { ok: false, erreur: "Enregistrement impossible. Réessayez." };
   }
   if (!formulaire) return { ok: false, erreur: "Ce formulaire n'est pas disponible." };

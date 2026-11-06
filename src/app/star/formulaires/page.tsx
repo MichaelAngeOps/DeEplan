@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { FormulairesStar } from "@/components/formulaires/FormulairesStar";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces, getUser } from "@/lib/auth";
 import { getFormulairesStar, type FormulaireStarResume } from "@/lib/data/formulaires";
 
@@ -13,7 +14,8 @@ export default async function FormulairesStarPage() {
   let formulaires: FormulaireStarResume[] | null = null;
   try {
     formulaires = await getFormulairesStar(user.id, acces.star.sectionIds);
-  } catch {
+  } catch (e) {
+    journaliserErreur("star/formulaires", e);
     // Message affiché ci-dessous.
   }
 

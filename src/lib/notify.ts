@@ -1,4 +1,5 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
+import { journaliserErreur } from "@/lib/journal";
 import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
 
@@ -55,9 +56,10 @@ async function envoyerPush(
   try {
     const supabase = await createClient();
     for (const userId of utilisateurIds) {
-      const { data: subs } = await supabase.rpc("push_subscriptions_pour", {
+      const { data: subs, error } = await supabase.rpc("push_subscriptions_pour", {
         p_user: userId,
       });
+      if (error) journaliserErreur("notify/abonnements", error);
       for (const s of subs ?? []) {
         if (s.type !== "web" || !s.p256dh || !s.auth) continue;
         try {
@@ -71,12 +73,14 @@ async function envoyerPush(
             await supabase.rpc("supprimer_abonnement_push", {
               p_endpoint: s.endpoint,
             });
+          } else {
+            journaliserErreur("notify/push", e);
           }
         }
       }
     }
-  } catch {
-    // ignoré
+  } catch (e) {
+    journaliserErreur("notify/push", e);
   }
 }
 
@@ -99,11 +103,12 @@ export async function notifier(
 ): Promise<void> {
   try {
     const supabase = await createClient();
-    await supabase
+    const { error } = await supabase
       .from("notifications")
       .insert({ utilisateur_id: utilisateurId, type, contenu, lien: lien ?? null });
-  } catch {
-    // ignoré
+    if (error) journaliserErreur(`notify/${type}`, error);
+  } catch (e) {
+    journaliserErreur(`notify/${type}`, e);
   }
   await envoyerPush([utilisateurId], type, contenu, lien);
 }
@@ -118,7 +123,7 @@ export async function notifierPlusieurs(
   if (utilisateurIds.length === 0) return;
   try {
     const supabase = await createClient();
-    await supabase
+    const { error } = await supabase
       .from("notifications")
       .insert(
         utilisateurIds.map((utilisateur_id) => ({
@@ -128,8 +133,9 @@ export async function notifierPlusieurs(
           lien: lien ?? null,
         })),
       );
-  } catch {
-    // ignoré
+    if (error) journaliserErreur(`notify/${type}`, error);
+  } catch (e) {
+    journaliserErreur(`notify/${type}`, e);
   }
   await envoyerPush(utilisateurIds, type, contenu, lien);
 }

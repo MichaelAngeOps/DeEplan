@@ -1,6 +1,7 @@
 import { Banner } from "@/components/ui";
 import { NotificationsClient } from "@/components/notifications/NotificationsClient";
 import { PushToggle } from "@/components/notifications/PushToggle";
+import { journaliserErreur } from "@/lib/journal";
 import { getUser } from "@/lib/auth";
 import { getNotifications } from "@/lib/data/notifications";
 
@@ -13,7 +14,8 @@ export default async function NotificationsPage() {
   let notifications;
   try {
     notifications = await getNotifications(user.id);
-  } catch {
+  } catch (e) {
+    journaliserErreur("star/notifications", e);
     return (
       <>
         <h2 className="font-display text-[20px] font-semibold tracking-[-0.3px] text-ink">

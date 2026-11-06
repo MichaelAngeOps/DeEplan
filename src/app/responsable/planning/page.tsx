@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Banner, Legend } from "@/components/ui";
 import { PlanningBoard } from "@/components/planning/PlanningBoard";
 import { PlanningMonthNav } from "@/components/planning/PlanningMonthNav";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getPlanningMois } from "@/lib/data/planning";
 import { iso, moisDecale } from "@/lib/dates";
@@ -42,7 +43,8 @@ export default async function PlanningPage({
   let planning;
   try {
     planning = await getPlanningMois(acces.departementId, debut, fin);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/planning", e);
     return (
       <>
         <Entete />

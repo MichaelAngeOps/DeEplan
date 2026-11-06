@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Banner, Card } from "@/components/ui";
 import { AlertesPanel } from "@/components/dashboard/AlertesPanel";
 import { StarsDeService } from "@/components/dashboard/StarsDeService";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import {
   getConflitsDispo,
@@ -29,7 +30,8 @@ export default async function DashboardPage() {
       getShiftsAConfirmer(departementId),
       getComptesEnAttente(departementId).then((c) => c.length),
     ]);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/dashboard", e);
     shifts = null;
   }
 

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { FormulaireStarRemplissage } from "@/components/formulaires/FormulaireStarRemplissage";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces, getUser } from "@/lib/auth";
 import { getFormulaireStar, type FormulaireStarDetail } from "@/lib/data/formulaires";
 
@@ -19,7 +20,8 @@ export default async function FormulaireStarPage({
   let formulaire: FormulaireStarDetail | null;
   try {
     formulaire = await getFormulaireStar(user.id, acces.star.sectionIds, id);
-  } catch {
+  } catch (e) {
+    journaliserErreur("star/formulaires/[id]", e);
     return (
       <Banner tone="danger" className="max-w-[640px]">
         Impossible de charger ce formulaire. Rechargez la page.

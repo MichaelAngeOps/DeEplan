@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces, getUser } from "@/lib/auth";
 import { getCandidats, getComptageDimanches } from "@/lib/data/candidats";
 import { dateCourteFr, estDimanche } from "@/lib/dates";
@@ -73,7 +74,8 @@ export async function chargerCandidats(
 
   try {
     return { ok: true, candidats: await getCandidats(sectionId, posteId, date) };
-  } catch {
+  } catch (e) {
+    journaliserErreur("actions/planning", e);
     return { ok: false, erreur: "Chargement des candidats impossible." };
   }
 }

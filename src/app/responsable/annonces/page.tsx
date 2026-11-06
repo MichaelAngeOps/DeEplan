@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Banner } from "@/components/ui";
 import { AnnoncesResponsable } from "@/components/annonces/AnnoncesResponsable";
 import { FormulairesResponsable } from "@/components/formulaires/FormulairesResponsable";
+import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getAnnonces } from "@/lib/data/annonces";
 import { getFormulaires, type FormulaireResume } from "@/lib/data/formulaires";
@@ -15,7 +16,8 @@ export default async function AnnoncesPage() {
   let annonces;
   try {
     annonces = await getAnnonces(acces.departementId);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/annonces", e);
     return (
       <>
         <h1 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.4px] text-ink">
@@ -31,7 +33,8 @@ export default async function AnnoncesPage() {
   let formulaires: FormulaireResume[] | null = null;
   try {
     formulaires = await getFormulaires(acces.departementId);
-  } catch {
+  } catch (e) {
+    journaliserErreur("responsable/annonces", e);
     // Les annonces restent utilisables : l'erreur s'affiche dans la section.
   }
 
