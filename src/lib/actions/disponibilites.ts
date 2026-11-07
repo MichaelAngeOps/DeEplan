@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { getAcces, getUser } from "@/lib/auth";
 import { aujourdhuiISO } from "@/lib/dates";
+import { journaliserErreur } from "@/lib/journal";
+import { pousserConflitsAuxResponsables } from "@/lib/notify";
+import { datesDevenuesIndisponibles } from "@/lib/planning-shared";
 import { createClient } from "@/lib/supabase/server";
 
 const PATH = "/star/disponibilites";
@@ -52,6 +55,17 @@ export async function enregistrerDisponibilites(
 
   const supabase = await createClient();
 
+  // À lire avant l'écriture, pour ne prévenir qu'au passage à « indisponible ».
+  const { data: existants, error: erreurLecture } = await supabase
+    .from("disponibilites")
+    .select("date, statut")
+    .eq("star_id", user.id)
+    .in(
+      "date",
+      changements.map((c) => c.date),
+    );
+  if (erreurLecture) journaliserErreur("actions/disponibilites", erreurLecture);
+
   const aSupprimer = changements
     .filter((c) => c.statut === null)
     .map((c) => c.date);
@@ -74,6 +88,13 @@ export async function enregistrerDisponibilites(
       .upsert(aUpserter, { onConflict: "star_id,date" });
     if (error) return { ok: false, erreur: "Enregistrement impossible. Réessayez." };
   }
+
+  // Sans lecture fiable, pas de push : la notification en base reste créée par le déclencheur.
+  if (!erreurLecture)
+    await pousserConflitsAuxResponsables(
+      user.id,
+      datesDevenuesIndisponibles(changements, existants ?? []),
+    );
 
   revalidatePath(PATH);
   return { ok: true };

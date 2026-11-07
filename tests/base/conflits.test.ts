@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { PGlite } from "@electric-sql/pglite";
+import { messageConflit } from "@/lib/planning-shared";
 import { creerBase, en, ID, preparerDeuxDepartements } from "./outils";
 
 const JOUR = "2099-03-10";
@@ -53,7 +54,7 @@ describe("notification de conflit au responsable", () => {
     const [n, ...reste] = await conflits();
     expect(reste).toEqual([]);
     expect(n.utilisateur_id).toBe(ID.respA);
-    expect(n.contenu).toBe("Conflit le 10/03 au poste Poste A : Compte Test n'est plus disponible.");
+    expect(n.contenu).toBe(messageConflit(JOUR, "Poste A", "Compte Test"));
     expect(n.lien).toBe("/responsable/dashboard");
   });
 

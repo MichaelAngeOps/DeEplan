@@ -1,5 +1,5 @@
 /** Types et helpers du planning partagés client / serveur (aucun import serveur). */
-import { aujourdhuiISO, estDimanche } from "@/lib/dates";
+import { aujourdhuiISO, dateCourteFr, estDimanche } from "@/lib/dates";
 import type { StatutShift } from "@/types/domain";
 import type { SectionAvecPostes } from "@/types/domain";
 
@@ -94,4 +94,20 @@ export function shiftsSansSection<T extends { star_id: string; sectionId: string
 ): T[] {
   const membres = new Set(liens.map((l) => `${l.star_id}_${l.section_id}`));
   return shifts.filter((s) => !membres.has(`${s.star_id}_${s.sectionId}`));
+}
+
+/** Texte d'un conflit. Le déclencheur `disponibilites_notifier_conflit` écrit le même, un test le vérifie. */
+export function messageConflit(date: string, posteNom: string, starNom: string): string {
+  return `Conflit le ${dateCourteFr(date)} au poste ${posteNom} : ${starNom} n'est plus disponible.`;
+}
+
+/** Dates qui passent à « indisponible » : réenregistrer le même statut ne doit rien renvoyer. */
+export function datesDevenuesIndisponibles(
+  changements: { date: string; statut: string | null }[],
+  existants: { date: string; statut: string }[],
+): string[] {
+  const deja = new Set(existants.filter((e) => e.statut === "indisponible").map((e) => e.date));
+  return changements
+    .filter((c) => c.statut === "indisponible" && !deja.has(c.date))
+    .map((c) => c.date);
 }

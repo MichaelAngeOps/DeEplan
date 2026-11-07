@@ -1,6 +1,9 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { journaliserErreur } from "@/lib/journal";
 import webpush from "web-push";
+import { aujourdhuiISO } from "@/lib/dates";
+import { messageConflit } from "@/lib/planning-shared";
+import { clientAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type TypeNotification =
@@ -36,6 +39,7 @@ const TITRE_PUSH: Partial<Record<TypeNotification, string>> = {
   shift_retire: "Shift retiré",
   annonce: "Nouvelle annonce",
   formulaire: "Nouveau formulaire",
+  conflit_dispo: "Conflit de disponibilité",
 };
 
 async function envoyerPush(
@@ -139,4 +143,77 @@ export async function notifierPlusieurs(
     journaliserErreur(`notify/${type}`, e);
   }
   await envoyerPush(utilisateurIds, type, contenu, lien);
+}
+
+/** Vrai si le serveur peut envoyer un push à un responsable. */
+export function pushResponsableActif(): boolean {
+  return clientAdmin() !== null && vapidConfig();
+}
+
+/**
+ * Push aux responsables concernés quand le star connecté devient indisponible un jour de shift.
+ * La notification en base est créée par un déclencheur ; seul l'envoi passe ici, avec le client
+ * admin, car la session du star ne peut pas lire les abonnements d'un responsable. Best-effort.
+ */
+export async function pousserConflitsAuxResponsables(
+  starId: string,
+  dates: string[],
+): Promise<void> {
+  if (dates.length === 0 || !vapidConfig()) return;
+  const admin = clientAdmin();
+  if (!admin) return;
+
+  try {
+    const { data: shifts, error } = await admin
+      .from("plannings")
+      .select(
+        "date, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departements!inner ( responsable_id ) ) )",
+      )
+      .eq("star_id", starId)
+      .in("date", dates)
+      .gte("date", aujourdhuiISO());
+    if (error) throw error;
+
+    for (const shift of shifts ?? []) {
+      const u = shift.utilisateurs as { prenom: string; nom: string } | null;
+      const poste = shift.postes as unknown as {
+        nom: string;
+        sections: { departements: { responsable_id: string } };
+      };
+      const responsableId = poste.sections.departements.responsable_id;
+
+      const { data: abonnements, error: erreurAbonnements } = await admin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth")
+        .eq("user_id", responsableId)
+        .eq("type", "web");
+      if (erreurAbonnements) throw erreurAbonnements;
+
+      const payload = JSON.stringify({
+        title: TITRE_PUSH.conflit_dispo,
+        body: messageConflit(shift.date, poste.nom, `${u?.prenom ?? ""} ${u?.nom ?? ""}`.trim()),
+        url: "/responsable/dashboard",
+        tag: "conflit_dispo",
+      });
+
+      for (const a of abonnements ?? []) {
+        if (!a.p256dh || !a.auth) continue;
+        try {
+          await webpush.sendNotification(
+            { endpoint: a.endpoint, keys: { p256dh: a.p256dh, auth: a.auth } },
+            payload,
+          );
+        } catch (e: unknown) {
+          const code = (e as { statusCode?: number }).statusCode;
+          if (code === 404 || code === 410) {
+            await admin.from("push_subscriptions").delete().eq("id", a.id);
+          } else {
+            journaliserErreur("notify/push-responsable", e);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    journaliserErreur("notify/push-responsable", e);
+  }
 }

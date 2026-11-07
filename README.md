@@ -45,6 +45,7 @@ Variables d'environnement (voir `.env.local.example`) :
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Clé publique des notifications push |
 | `VAPID_PRIVATE_KEY` | Clé privée des notifications push, **secrète** |
 | `VAPID_SUBJECT` | Contact des notifications push (`mailto:…`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Secrète, serveur uniquement.** Push aux responsables ; facultative, ces push restent inactifs sans elle |
 
 ## Scripts
 
@@ -73,6 +74,7 @@ chaque push sur `main` (`.github/workflows/ci.yml`).
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+   - `SUPABASE_SERVICE_ROLE_KEY` (*Production* uniquement)
 3. **Deploy**.
 4. Après le premier déploiement, mettre à jour :
    - **Supabase → Authentication → URL Configuration** : *Site URL* =

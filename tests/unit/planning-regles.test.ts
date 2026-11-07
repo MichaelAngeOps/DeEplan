@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   compterDimanches,
   confirmationDimancheRequise,
+  datesDevenuesIndisponibles,
   idsCandidats,
   shiftsSansSection,
   statutAffiche,
@@ -123,5 +124,25 @@ describe("shiftsSansSection", () => {
 
   it("signale un star présent dans une autre section seulement", () => {
     expect(shiftsSansSection([shift("b", "s1")], liens)).toEqual([shift("b", "s1")]);
+  });
+});
+
+describe("datesDevenuesIndisponibles", () => {
+  it("garde seulement les vrais passages à « indisponible »", () => {
+    expect(
+      datesDevenuesIndisponibles(
+        [
+          { date: "2026-12-01", statut: "indisponible" },
+          { date: "2026-12-02", statut: "indisponible" },
+          { date: "2026-12-03", statut: "indisponible" },
+          { date: "2026-12-04", statut: "disponible" },
+          { date: "2026-12-05", statut: null },
+        ],
+        [
+          { date: "2026-12-01", statut: "disponible" },
+          { date: "2026-12-02", statut: "indisponible" },
+        ],
+      ),
+    ).toEqual(["2026-12-01", "2026-12-03"]);
   });
 });

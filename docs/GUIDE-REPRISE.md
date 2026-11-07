@@ -53,7 +53,8 @@ Supabase : PostgreSQL, Auth, Realtime
 
 - La RLS est la vraie barrière de sécurité. Les contrôles des Server Actions servent aux messages
   et aux règles métier, ils ne la remplacent pas.
-- La clé `service_role` n'est pas utilisée par l'application et ne doit jamais atteindre le client.
+- La clé `service_role` ne sert qu'à envoyer les push aux responsables, via `src/lib/supabase/admin.ts`.
+  Ce client ignore la RLS : ne pas l'employer ailleurs. La clé ne doit jamais atteindre le client.
 - Toute nouvelle table a la RLS activée et des tests d'accès dans `tests/base/`.
 - Le client Supabase renvoie ses erreurs dans le champ `error` sans lever d'exception : il faut
   le contrôler.
@@ -78,6 +79,7 @@ en obtenir l'accès.
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `.env.local`, Vercel | Publique |
 | `VAPID_PRIVATE_KEY` | `.env.local`, Vercel | **Secrète** |
 | `VAPID_SUBJECT` | `.env.local`, Vercel | Contact des notifications push |
+| `SUPABASE_SERVICE_ROLE_KEY` | `.env.local`, Vercel | **Secrète**, tous les droits sur la base. Facultative : sans elle, seuls les push aux responsables sont inactifs |
 
 Les secrets vont dans un gestionnaire de mots de passe, jamais dans un fichier versionné.
 
