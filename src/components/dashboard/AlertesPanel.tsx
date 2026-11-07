@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, ClockAlert, TriangleAlert, UserPlus } from "lucide-react";
+import { ShiftAConfirmerLigne } from "@/components/dashboard/ShiftAConfirmerLigne";
 import { Card } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { dateCourteFr } from "@/lib/dates";
@@ -31,11 +32,7 @@ export function AlertesPanel({
         {aConfirmer.length === 0 ? (
           <Vide>Aucun.</Vide>
         ) : (
-          aConfirmer.map((s, i) => (
-            <Item key={i}>
-              {s.starNom} · {s.posteNom} · {dateCourteFr(s.date)}
-            </Item>
-          ))
+          aConfirmer.map((s) => <ShiftAConfirmerLigne key={s.id} shift={s} />)
         )}
       </Bloc>
 

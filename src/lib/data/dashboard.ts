@@ -113,31 +113,32 @@ export const getConflitsDispo = cache(
 );
 
 export interface ShiftAConfirmer {
+  id: string;
   starNom: string;
   posteNom: string;
   date: string;
 }
 
-/**
- * Shifts au statut `a_confirmer`. ⚠️ Ce statut est censé être posé automatiquement
- * (24 h sans mise à jour) par une Edge Function — **hors périmètre de cette
- * phase** (prompt §10). En pratique le bloc reste vide pour l'instant.
- */
+/** Shifts à régler. Le statut `a_confirmer` est posé par une tâche planifiée de la base. */
 export const getShiftsAConfirmer = cache(
   async (departementId: string): Promise<ShiftAConfirmer[]> => {
     const supabase = await createClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("plannings")
       .select(
-        "date, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departement_id ) )",
+        "id, date, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departement_id ) )",
       )
       .eq("statut", "a_confirmer")
-      .eq("postes.sections.departement_id", departementId);
+      .eq("postes.sections.departement_id", departementId)
+      .order("date", { ascending: true });
+
+    if (error) throw new Error("Chargement des shifts à confirmer impossible.");
 
     return (data ?? []).map((r) => {
       const u = r.utilisateurs as { prenom: string; nom: string } | null;
       const po = r.postes as unknown as { nom: string };
       return {
+        id: r.id,
         starNom: u ? `${u.prenom} ${u.nom}`.trim() : "Star",
         posteNom: po.nom,
         date: r.date,

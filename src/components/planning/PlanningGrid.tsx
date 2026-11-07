@@ -3,10 +3,16 @@
 import { initials } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { iso, joursDansMois, jourSemaine } from "@/lib/dates";
-import { cleCase, type PlanningMois, type ShiftCase } from "@/lib/planning-shared";
-import type { StatutShift } from "@/types/domain";
+import {
+  cleCase,
+  statutAffiche,
+  type PlanningMois,
+  type ShiftCase,
+  type StatutAffiche,
+} from "@/lib/planning-shared";
 
-const CHIP: Record<StatutShift, string> = {
+const CHIP: Record<StatutAffiche, string> = {
+  planifie: "bg-parchment text-ink-80 ring-1 ring-hairline",
   de_service: "bg-accent/15 text-accent",
   a_servi: "bg-success/15 text-success",
   na_pas_servi: "bg-danger/15 text-danger",
@@ -178,7 +184,7 @@ function SectionRows({
                         "inline-flex h-6 w-6 items-center justify-center rounded-xs text-[10.5px] font-semibold",
                         shift.conflit
                           ? "bg-warning/25 text-warning ring-1 ring-warning"
-                          : CHIP[shift.statut],
+                          : CHIP[statutAffiche(shift.statut, j.dateISO)],
                       )}
                     >
                       {shift.starNom ? initials(shift.starNom) : "?"}

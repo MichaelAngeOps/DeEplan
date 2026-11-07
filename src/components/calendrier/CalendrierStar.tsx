@@ -6,9 +6,10 @@ import { Legend, Modal, MonthNavigator, StatusBadge } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { ShiftStar, ShiftsStarMap } from "@/lib/data/calendrier-star";
 import { decalagePremierJour, formatJour, iso, JOURS_FR, joursDansMois, jourSemaine, libelleMois, moisDecale } from "@/lib/dates";
-import type { StatutShift } from "@/types/domain";
+import { statutAffiche, type StatutAffiche } from "@/lib/planning-shared";
 
-const CHIP: Record<StatutShift, string> = {
+const CHIP: Record<StatutAffiche, string> = {
+  planifie: "bg-parchment text-ink-80 ring-1 ring-hairline",
   de_service: "bg-accent/15 text-accent",
   a_servi: "bg-success/15 text-success",
   na_pas_servi: "bg-danger/15 text-danger",
@@ -16,6 +17,7 @@ const CHIP: Record<StatutShift, string> = {
 };
 
 const LEGENDE = [
+  { dotClassName: "bg-ink-48", label: "Planifié" },
   { dotClassName: "bg-accent", label: "De service" },
   { dotClassName: "bg-success", label: "A servi" },
   { dotClassName: "bg-danger", label: "N'a pas servi" },
@@ -102,7 +104,7 @@ export function CalendrierStar({
                     key={s.id}
                     className={cn(
                       "mt-1 block truncate rounded px-1 py-0.5 text-[9px] font-semibold",
-                      CHIP[s.statut],
+                      CHIP[statutAffiche(s.statut, dateISO)],
                     )}
                   >
                     {s.posteNom}
@@ -143,7 +145,7 @@ export function CalendrierStar({
                 className="flex flex-col gap-3 border-b border-hairline pb-4 last:border-0 last:pb-0"
               >
                 <Ligne label="Statut">
-                  <StatusBadge statut={s.statut} />
+                  <StatusBadge statut={statutAffiche(s.statut, jourDetail)} />
                 </Ligne>
                 <Ligne label="Section">{s.sectionNom}</Ligne>
                 <Ligne label="Poste">{s.posteNom}</Ligne>

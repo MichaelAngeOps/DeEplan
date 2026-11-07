@@ -1,5 +1,5 @@
 /** Types et helpers du planning partagés client / serveur (aucun import serveur). */
-import { estDimanche } from "@/lib/dates";
+import { aujourdhuiISO, estDimanche } from "@/lib/dates";
 import type { StatutShift } from "@/types/domain";
 import type { SectionAvecPostes } from "@/types/domain";
 
@@ -69,4 +69,20 @@ export function idsCandidats(
     dispos.filter((d) => d.statut === "disponible").map((d) => d.star_id),
   );
   return starIds.filter((id) => valides.has(id) && disponibles.has(id));
+}
+
+/** Statut montré à l'écran. Un shift à venir reste `de_service` en base et s'affiche « Planifié ». */
+export type StatutAffiche = StatutShift | "planifie";
+
+export function statutAffiche(
+  statut: StatutShift,
+  date: string,
+  aujourdhui: string = aujourdhuiISO(),
+): StatutAffiche {
+  return statut === "de_service" && date > aujourdhui ? "planifie" : statut;
+}
+
+/** On ne peut pas déclarer servi, ou non, un shift qui n'a pas encore eu lieu. */
+export function statutDeclarable(date: string, aujourdhui: string = aujourdhuiISO()): boolean {
+  return date <= aujourdhui;
 }

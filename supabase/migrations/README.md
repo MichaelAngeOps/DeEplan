@@ -34,6 +34,7 @@ Ne jamais appliquer `schema-complet.sql` sur une base existante.
 | 20261106041019 | formulaires_et_lien_notifications | **A9a** — tables `formulaires`, `formulaire_questions`, `formulaire_reponses`, triggers de garde et de validation, RLS, colonne `notifications.lien` |
 | 20261106064650 | formulaires_suppression_si_ferme | **A10** — suppression d'un formulaire brouillon ou fermé (réponses en cascade), trigger retirant les notifications liées |
 | 20261107051150 | plannings_filtrage_strict | **R2** — déclencheur : un shift n'est attribué qu'à un star de la section, validé et disponible ce jour-là |
+| 20261107052231 | shifts_a_confirmer_automatique | **R3** — fonction `shifts_marquer_a_confirmer`, tâche `pg_cron` horaire `deeplan-shifts-a-confirmer` |
 
 Régénérer les types après toute migration :
 `npx supabase gen types typescript --project-id wjsvygzatbguwzzzvopv > src/types/supabase.ts`

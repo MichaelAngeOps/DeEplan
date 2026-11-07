@@ -1,8 +1,8 @@
 import { cn } from "@/lib/cn";
-import type { StatutShift } from "@/types/domain";
+import type { StatutAffiche } from "@/lib/planning-shared";
 
 /** Statut affichable = statut de shift + « pas en service » (absence de shift). */
-export type StatutAffichage = StatutShift | "pas_en_service";
+export type StatutAffichage = StatutAffiche | "pas_en_service";
 
 const STYLES: Record<
   StatutAffichage,
@@ -12,6 +12,11 @@ const STYLES: Record<
     label: "Pas en service",
     className: "text-ink-48 bg-transparent",
     dot: "bg-hairline",
+  },
+  planifie: {
+    label: "Planifié",
+    className: "text-ink-80 bg-parchment",
+    dot: "bg-ink-48",
   },
   de_service: {
     label: "De service",

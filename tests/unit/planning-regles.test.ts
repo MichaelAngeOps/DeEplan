@@ -3,6 +3,8 @@ import {
   compterDimanches,
   confirmationDimancheRequise,
   idsCandidats,
+  statutAffiche,
+  statutDeclarable,
 } from "@/lib/planning-shared";
 
 // Dimanches de novembre 2026 : 1, 8, 15, 22, 29.
@@ -75,5 +77,34 @@ describe("idsCandidats", () => {
 
   it("exclut un star validé et disponible, mais absent de la section", () => {
     expect(idsCandidats(["b", "c"], roles, dispos)).toEqual([]);
+  });
+});
+
+describe("statutAffiche", () => {
+  const AUJOURDHUI = "2026-11-10";
+
+  it("montre « Planifié » pour un shift à venir", () => {
+    expect(statutAffiche("de_service", "2026-11-11", AUJOURDHUI)).toBe("planifie");
+  });
+
+  it("montre « De service » le jour même", () => {
+    expect(statutAffiche("de_service", AUJOURDHUI, AUJOURDHUI)).toBe("de_service");
+  });
+
+  it("garde le statut d'un shift passé en attente de la tâche planifiée", () => {
+    expect(statutAffiche("de_service", "2026-11-09", AUJOURDHUI)).toBe("de_service");
+  });
+
+  it("ne change aucun autre statut", () => {
+    expect(statutAffiche("a_servi", "2026-11-11", AUJOURDHUI)).toBe("a_servi");
+    expect(statutAffiche("a_confirmer", "2026-11-09", AUJOURDHUI)).toBe("a_confirmer");
+  });
+});
+
+describe("statutDeclarable", () => {
+  it("refuse un shift à venir, accepte le jour même et le passé", () => {
+    expect(statutDeclarable("2026-11-11", "2026-11-10")).toBe(false);
+    expect(statutDeclarable("2026-11-10", "2026-11-10")).toBe(true);
+    expect(statutDeclarable("2026-11-09", "2026-11-10")).toBe(true);
   });
 });

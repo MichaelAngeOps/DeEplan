@@ -9,6 +9,7 @@ import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getFicheStar } from "@/lib/data/annuaire";
 import { getFormulairesDuStar, type FormulaireDuStar } from "@/lib/data/formulaires";
+import { statutAffiche } from "@/lib/planning-shared";
 
 function dateFr(iso: string): string {
   return formatJour(iso, { weekday: "short", day: "2-digit", month: "2-digit" });
@@ -119,7 +120,7 @@ export default async function FicheStarPage({
                 <span className="text-ink">
                   {dateFr(s.date)} · {s.posteNom}
                 </span>
-                <StatusBadge statut={s.statut} />
+                <StatusBadge statut={statutAffiche(s.statut, s.date)} />
               </div>
             ))
           )}

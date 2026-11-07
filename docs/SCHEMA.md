@@ -83,6 +83,8 @@ par poste et par jour → #2 résolu.
 
 Déclencheur `trg_plannings_verifier_candidat` (R2, migration `20261107051150`) : à l'attribution (star, poste ou date), le star doit être dans la section du poste, validé et `disponible` ce jour-là. S'exécute après la RLS. Les changements de statut et d'horaires ne sont pas concernés.
 
+Tâche `pg_cron` `deeplan-shifts-a-confirmer` (R3, migration `20261107052231`, minute 5 de chaque heure) : `shifts_marquer_a_confirmer()` passe à `a_confirmer` les shifts `de_service` dont le jour est terminé à Ottawa. Un shift à venir reste `de_service` en base et s'affiche « Planifié ».
+
 ### `annonces`
 `id` PK · `departement_id` → departements · `responsable_id` → utilisateurs · `titre` · `contenu` · `date_publication` timestamptz.
 

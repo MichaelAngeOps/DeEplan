@@ -6,7 +6,7 @@ import { getAcces, getUser } from "@/lib/auth";
 import { getCandidats, getComptageDimanches } from "@/lib/data/candidats";
 import { dateCourteFr, estDimanche } from "@/lib/dates";
 import { notifier } from "@/lib/notify";
-import { confirmationDimancheRequise } from "@/lib/planning-shared";
+import { confirmationDimancheRequise, statutDeclarable } from "@/lib/planning-shared";
 import { createClient } from "@/lib/supabase/server";
 import type { Candidat } from "@/lib/data/candidats";
 
@@ -214,11 +214,13 @@ export async function definirStatutShift(
 
   const { data: shift } = await supabase
     .from("plannings")
-    .select("id, postes!inner(sections!inner(departement_id))")
+    .select("id, date, postes!inner(sections!inner(departement_id))")
     .eq("id", shiftId)
     .eq("postes.sections.departement_id", g.departementId)
     .maybeSingle();
   if (!shift) return { ok: false, erreur: "Shift introuvable." };
+  if (statut !== "de_service" && !statutDeclarable(shift.date))
+    return { ok: false, erreur: "Ce shift n'a pas encore eu lieu." };
 
   const { error } = await supabase
     .from("plannings")

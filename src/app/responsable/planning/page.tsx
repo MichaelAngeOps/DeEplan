@@ -10,6 +10,7 @@ import { iso, moisCourant, moisDecale } from "@/lib/dates";
 export const metadata = { title: "Planification — DeEplan" };
 
 const LEGENDE = [
+  { dotClassName: "bg-ink-48", label: "Planifié" },
   { dotClassName: "bg-accent", label: "De service" },
   { dotClassName: "bg-success", label: "A servi" },
   { dotClassName: "bg-danger", label: "N'a pas servi" },
