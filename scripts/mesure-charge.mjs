@@ -1,6 +1,8 @@
 /**
  * Mesure de charge sur un jeu fictif, dans un Postgres temporaire (PGlite). Ne contacte jamais Supabase.
  * Lancer : node scripts/mesure-charge.mjs
+ * Avant/après une migration, dans la même exécution :
+ *   COMPARER=20261107212557_index_cles_etrangeres.sql node scripts/mesure-charge.mjs
  *
  * Les durées sont à comparer entre elles : PGlite tourne dans Node, pas sur un vrai serveur.
  */
@@ -31,7 +33,8 @@ await db.exec(`
   create publication supabase_realtime;
 `);
 await db.exec(readFileSync(join(racine, "schema", "schema-complet.sql"), "utf8"));
-for (const f of readdirSync(join(racine, "migrations")).filter((f) => f.endsWith(".sql") && f.slice(0, 14) > "20261106064650").sort()) {
+const COMPARER = process.env.COMPARER;
+for (const f of readdirSync(join(racine, "migrations")).filter((f) => f.endsWith(".sql") && f.slice(0, 14) > "20261106064650" && f !== COMPARER).sort()) {
   await db.exec(readFileSync(join(racine, "migrations", f), "utf8"));
 }
 await db.exec("set search_path = public");
@@ -152,26 +155,28 @@ const debutTache = performance.now();
 const tache = await db.query("select public.shifts_marquer_a_confirmer() n");
 console.log(`Tâche planifiée : ${(performance.now() - debutTache).toFixed(0)} ms, ${tache.rows[0].n} lignes`);
 
-// Essai de ce que C2 pourrait corriger : uniquement dans cette base temporaire.
-const politiques = await db.query(`select tablename, policyname, cmd, roles::text roles, qual, with_check from pg_policies where schemaname = 'public' and (qual like '%auth.uid()%' or with_check like '%auth.uid()%') and coalesce(qual, '') || coalesce(with_check, '') not like '%SELECT auth.uid()%'`);
-const emballer = (v) => (v ? v.replaceAll("auth.uid()", "(select auth.uid())") : v);
-for (const p of politiques.rows) {
-  const roles = p.roles === "{public}" ? "" : ` to ${p.roles.replace(/[{}]/g, "")}`;
-  await db.exec(`drop policy "${p.policyname}" on public.${p.tablename};
-    create policy "${p.policyname}" on public.${p.tablename} for ${p.cmd}${roles}${p.qual ? ` using (${emballer(p.qual)})` : ""}${p.with_check ? ` with check (${emballer(p.with_check)})` : ""};`);
+async function supprimerDepartement(d) {
+  const id = `00000000-0000-4000-8200-${String(d * 100000).padStart(12, "0")}`;
+  const debut = performance.now();
+  await db.query("delete from departements where id = $1", [id]);
+  return performance.now() - debut;
 }
-log(`${politiques.rows.length} politiques réécrites`);
-await db.exec(`
-  create index on star_sections (section_id);
-  create index on demandes_departement (departement_id);
-  create index on departements (responsable_id);
-  create index on plannings (date);
-  analyze;
-`);
-const apres = await mesurer("Essai : politiques réécrites et index ajoutés");
 
-console.log("\n=== Gain");
-for (const nom of Object.keys(avant)) {
-  console.log(`${nom.padEnd(46)} ${avant[nom].toFixed(1).padStart(10)} -> ${apres[nom].toFixed(1).padStart(10)} ms  (x${(avant[nom] / apres[nom]).toFixed(1)})`);
+const suppressionAvant = await supprimerDepartement(1);
+console.log(`Suppression d'un département : ${suppressionAvant.toFixed(0)} ms`);
+
+if (COMPARER) {
+  await db.exec(readFileSync(join(racine, "migrations", COMPARER), "utf8"));
+  await db.exec("analyze");
+  log(`migration appliquée : ${COMPARER}`);
+  const apres = await mesurer("Après la migration");
+  const suppressionApres = await supprimerDepartement(2);
+  console.log(`Suppression d'un département : ${suppressionApres.toFixed(0)} ms`);
+
+  console.log("\n=== Comparaison");
+  for (const nom of Object.keys(avant)) {
+    console.log(`${nom.padEnd(46)} ${avant[nom].toFixed(1).padStart(10)} -> ${apres[nom].toFixed(1).padStart(10)} ms`);
+  }
+  console.log(`${"Suppression d'un département".padEnd(46)} ${suppressionAvant.toFixed(1).padStart(10)} -> ${suppressionApres.toFixed(1).padStart(10)} ms`);
 }
 await db.close();

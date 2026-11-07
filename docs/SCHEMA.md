@@ -117,6 +117,13 @@ Lecture serveur (envoi de push) via la fonction SECURITY DEFINER
 `push_subscriptions_pour(user)` (soi-même ou responsable d'un dept du star).
 `type` prépare l'ajout de FCM (Android) / APNs (iOS) sans refonte.
 
+## Index (Lot Charge C3 — migration `20261107212557`)
+
+Chaque clé étrangère a un index (contrôlé par `tests/base/schema.test.ts`), et aucun index n'en double un autre.
+Ajoutés : `star_sections(section_id)`, `demandes_departement(departement_id)`, `departements(responsable_id)`,
+`plannings(cree_par)`, `annonces(responsable_id)`. Retirés : `plannings_poste_id_date_idx` et
+`disponibilites_star_id_date_idx`, doublons des index uniques `(poste_id, date)` et `(star_id, date)`.
+
 ## Fonctions RLS (SECURITY DEFINER, STABLE)
 
 | Fonction | Rôle |

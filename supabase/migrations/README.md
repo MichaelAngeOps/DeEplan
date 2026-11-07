@@ -36,6 +36,7 @@ Ne jamais appliquer `schema-complet.sql` sur une base existante.
 | 20261107051150 | plannings_filtrage_strict | **R2** — déclencheur : un shift n'est attribué qu'à un star de la section, validé et disponible ce jour-là |
 | 20261107052231 | shifts_a_confirmer_automatique | **R3** — fonction `shifts_marquer_a_confirmer`, tâche `pg_cron` horaire `deeplan-shifts-a-confirmer` |
 | 20261107054045 | notifier_responsable_conflit_dispo | **R4** — déclencheur : notifie le responsable quand un star devient indisponible un jour où il a un shift à venir |
+| 20261107212557 | index_cles_etrangeres | **C3** — 5 index de clés étrangères (`star_sections.section_id`, `demandes_departement.departement_id`, `departements.responsable_id`, `plannings.cree_par`, `annonces.responsable_id`) ; retrait de 2 doublons d'index uniques |
 
 Régénérer les types après toute migration :
 `npx supabase gen types typescript --project-id wjsvygzatbguwzzzvopv > src/types/supabase.ts`
