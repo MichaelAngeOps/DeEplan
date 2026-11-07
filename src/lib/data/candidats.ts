@@ -1,8 +1,8 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { estDimanche, iso, moisDecale } from "@/lib/dates";
-import type { Candidat } from "@/lib/planning-shared";
+import { iso, moisDecale } from "@/lib/dates";
+import { compterDimanches, idsCandidats, type Candidat } from "@/lib/planning-shared";
 
 export type { Candidat };
 
@@ -47,16 +47,6 @@ export const getCandidats = cache(
       }),
     ]);
 
-    const valides = new Set(
-      (roles.data ?? [])
-        .filter((r) => r.statut === "valide")
-        .map((r) => r.utilisateur_id),
-    );
-    const disponibles = new Set(
-      (dispos.data ?? [])
-        .filter((d) => d.statut === "disponible")
-        .map((d) => d.star_id),
-    );
     const nomParId = new Map(
       (users.data ?? []).map((u) => [u.id, `${u.prenom} ${u.nom}`.trim()]),
     );
@@ -64,8 +54,7 @@ export const getCandidats = cache(
       ((planifiesAilleurs.data as string[] | null) ?? []),
     );
 
-    return starIds
-      .filter((id) => valides.has(id) && disponibles.has(id))
+    return idsCandidats(starIds, roles.data ?? [], dispos.data ?? [])
       .map((id) => ({
         id,
         nom: nomParId.get(id) ?? "Star",
@@ -89,6 +78,6 @@ export const getComptageDimanches = cache(
       .neq("statut", "na_pas_servi")
       .gte("date", iso(annee, mois, 1))
       .lt("date", moisDecale(annee, mois, 1));
-    return (data ?? []).filter((p) => estDimanche(p.date)).length;
+    return compterDimanches(data ?? []);
   },
 );

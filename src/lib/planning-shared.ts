@@ -1,4 +1,5 @@
 /** Types et helpers du planning partagés client / serveur (aucun import serveur). */
+import { estDimanche } from "@/lib/dates";
 import type { StatutShift } from "@/types/domain";
 import type { SectionAvecPostes } from "@/types/domain";
 
@@ -30,4 +31,42 @@ export interface Candidat {
   nom: string;
   /** A déjà un shift ce jour-là sur un AUTRE poste. */
   dejaPlanifieAilleurs: boolean;
+}
+
+/** Nombre de dimanches déjà planifiés à partir duquel une confirmation est demandée. */
+export const SEUIL_DIMANCHES = 3;
+
+/** Shifts tombant un dimanche, hors « n'a pas servi » (règle des 4 dimanches). */
+export function compterDimanches(shifts: { date: string; statut: string }[]): number {
+  return shifts.filter((s) => s.statut !== "na_pas_servi" && estDimanche(s.date)).length;
+}
+
+/** Vrai si l'assignation doit d'abord être confirmée. La règle se contourne librement. */
+export function confirmationDimancheRequise({
+  date,
+  dimanchesDeja,
+  memeStar,
+  forcer,
+}: {
+  date: string;
+  dimanchesDeja: number;
+  memeStar: boolean;
+  forcer: boolean;
+}): boolean {
+  return !memeStar && !forcer && estDimanche(date) && dimanchesDeja >= SEUIL_DIMANCHES;
+}
+
+/** Parmi les stars d'une section : ceux dont le rôle est validé et qui sont disponibles ce jour-là. */
+export function idsCandidats(
+  starIds: string[],
+  roles: { utilisateur_id: string; statut: string }[],
+  dispos: { star_id: string; statut: string }[],
+): string[] {
+  const valides = new Set(
+    roles.filter((r) => r.statut === "valide").map((r) => r.utilisateur_id),
+  );
+  const disponibles = new Set(
+    dispos.filter((d) => d.statut === "disponible").map((d) => d.star_id),
+  );
+  return starIds.filter((id) => valides.has(id) && disponibles.has(id));
 }

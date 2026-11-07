@@ -11,14 +11,14 @@ describe("règles d'accès", () => {
     db = await creerBase();
     await preparerDeuxDepartements(db);
     await db.query(
-      `insert into plannings (star_id, poste_id, date, cree_par) values
-         ($1, $3, $5, $6), ($2, $4, $5, $7)`,
-      [ID.starA, ID.starB, ID.posteA, ID.posteB, JOUR, ID.respA, ID.respB],
-    );
-    await db.query(
       `insert into disponibilites (star_id, date, statut) values
          ($1, $3, 'disponible'), ($2, $3, 'disponible')`,
       [ID.starA, ID.starB, JOUR],
+    );
+    await db.query(
+      `insert into plannings (star_id, poste_id, date, cree_par) values
+         ($1, $3, $5, $6), ($2, $4, $5, $7)`,
+      [ID.starA, ID.starB, ID.posteA, ID.posteB, JOUR, ID.respA, ID.respB],
     );
   });
   afterAll(() => db.close());

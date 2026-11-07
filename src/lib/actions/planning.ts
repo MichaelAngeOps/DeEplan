@@ -6,6 +6,7 @@ import { getAcces, getUser } from "@/lib/auth";
 import { getCandidats, getComptageDimanches } from "@/lib/data/candidats";
 import { dateCourteFr, estDimanche } from "@/lib/dates";
 import { notifier } from "@/lib/notify";
+import { confirmationDimancheRequise } from "@/lib/planning-shared";
 import { createClient } from "@/lib/supabase/server";
 import type { Candidat } from "@/lib/data/candidats";
 
@@ -128,7 +129,14 @@ export async function assignerShift(
   if (!modificationMemeStar && estDimanche(date) && !input.forcerDimanche) {
     const [a, m] = date.split("-").map(Number);
     const dejaDimanches = await getComptageDimanches(starId, a, m);
-    if (dejaDimanches >= 3) {
+    if (
+      confirmationDimancheRequise({
+        date,
+        dimanchesDeja: dejaDimanches,
+        memeStar: modificationMemeStar,
+        forcer: Boolean(input.forcerDimanche),
+      })
+    ) {
       const nom = candidats.find((c) => c.id === starId)?.nom ?? "Ce star";
       return {
         ok: false,
@@ -160,7 +168,13 @@ export async function assignerShift(
       },
       { onConflict: "poste_id,date" },
     );
-    if (error) return { ok: false, erreur: "Assignation impossible." };
+    if (error) {
+      // 23514 : la base refuse le star, par exemple s'il vient de changer sa disponibilité.
+      if (error.code === "23514")
+        return { ok: false, erreur: "Ce star n'est pas disponible pour ce poste à cette date." };
+      journaliserErreur("actions/planning/assigner", error);
+      return { ok: false, erreur: "Assignation impossible." };
+    }
   }
 
   // Notifications (best-effort).

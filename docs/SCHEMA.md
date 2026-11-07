@@ -81,6 +81,8 @@ Index `(star_id, date)` — non unique. Index **unique `(poste_id, date)`**
 (`plannings_poste_id_date_key`, migration `20260828052524`, Lot 4b) : 1 star max
 par poste et par jour → #2 résolu.
 
+Déclencheur `trg_plannings_verifier_candidat` (R2, migration `20261107051150`) : à l'attribution (star, poste ou date), le star doit être dans la section du poste, validé et `disponible` ce jour-là. S'exécute après la RLS. Les changements de statut et d'horaires ne sont pas concernés.
+
 ### `annonces`
 `id` PK · `departement_id` → departements · `responsable_id` → utilisateurs · `titre` · `contenu` · `date_publication` timestamptz.
 
