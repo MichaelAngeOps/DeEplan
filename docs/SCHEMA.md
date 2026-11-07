@@ -107,6 +107,8 @@ RLS : écriture par le responsable uniquement tant que le formulaire est en brou
 Trigger `formulaire_reponses_valider` : question connue, obligatoires présentes, valeur conforme au type, dates posées par le trigger.
 RLS : le star lit toujours sa réponse, et l'écrit seulement si le formulaire est publié et qu'il est dans le département ; le responsable du département lit sans modifier ; aucune suppression directe.
 
+Déclencheur sur `disponibilites` : `trg_disponibilites_notifier_conflit` (R4, migration `20261107054045`) crée une notification `conflit_dispo` pour le responsable au passage à `indisponible` un jour de shift à venir.
+
 ### `push_subscriptions` (Lot A7d — migration `20260829233412`)
 `id` PK · `user_id` → utilisateurs (CASCADE) · `type` CHECK `('web','fcm','apns')`
 default `web` · `endpoint` · `p256dh` / `auth` (web uniquement) · `date_creation`.

@@ -1,21 +1,23 @@
 import Link from "next/link";
-import { ChevronRight, ClockAlert, TriangleAlert, UserPlus } from "lucide-react";
+import { ChevronRight, ClockAlert, TriangleAlert, UserPlus, UserX } from "lucide-react";
 import { ShiftAConfirmerLigne } from "@/components/dashboard/ShiftAConfirmerLigne";
 import { Card } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { dateCourteFr } from "@/lib/dates";
-import type { ConflitDispo, ShiftAConfirmer } from "@/lib/data/dashboard";
+import type { ConflitDispo, ShiftAConfirmer, ShiftAVenir } from "@/lib/data/dashboard";
 
 export function AlertesPanel({
   conflits,
   aConfirmer,
+  aReattribuer,
   nbEnAttente,
 }: {
   conflits: ConflitDispo[];
   aConfirmer: ShiftAConfirmer[];
+  aReattribuer: ShiftAVenir[];
   nbEnAttente: number;
 }) {
-  const alerteActive = conflits.length > 0 || aConfirmer.length > 0;
+  const alerteActive = conflits.length > 0 || aConfirmer.length > 0 || aReattribuer.length > 0;
 
   return (
     <Card
@@ -48,6 +50,29 @@ export function AlertesPanel({
             <Item key={c.planningId}>
               {c.starNom} est indisponible le {dateCourteFr(c.date)} mais planifié
               à {c.posteNom}.
+            </Item>
+          ))
+        )}
+      </Bloc>
+
+      <Bloc
+        icon={<UserX size={15} className="text-danger" />}
+        titre="Shifts à réattribuer"
+        alerte={aReattribuer.length > 0}
+      >
+        {aReattribuer.length === 0 ? (
+          <Vide>Aucun.</Vide>
+        ) : (
+          aReattribuer.map((s) => (
+            <Item key={s.id}>
+              {s.starNom} n&apos;est plus dans la section : {s.posteNom}, le{" "}
+              {dateCourteFr(s.date)}.{" "}
+              <Link
+                href={`/responsable/planning?mois=${s.date.slice(0, 7)}`}
+                className="font-semibold text-accent"
+              >
+                Ouvrir le planning
+              </Link>
             </Item>
           ))
         )}

@@ -28,6 +28,7 @@ export const RESPONSABLE_NAV: NavEntry[] = [
   { href: "/responsable/stars", label: "Annuaire des stars", shortLabel: "Stars", icon: Users },
   { href: "/responsable/validations", label: "Comptes en attente", shortLabel: "En attente", icon: UserPlus },
   { href: "/responsable/annonces", label: "Annonces", shortLabel: "Annonces", icon: Megaphone },
+  { href: "/responsable/notifications", label: "Notifications", shortLabel: "Notifs", icon: Bell },
 ];
 
 export const STAR_NAV: NavEntry[] = [

@@ -10,7 +10,8 @@ export type TypeNotification =
   | "shift_retire"
   | "annonce"
   | "departement_cree"
-  | "formulaire";
+  | "formulaire"
+  | "conflit_dispo";
 
 // --------------------------------------------------------------------------
 // Web push (best-effort, aucun échec ne remonte)

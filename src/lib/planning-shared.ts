@@ -86,3 +86,12 @@ export function statutAffiche(
 export function statutDeclarable(date: string, aujourdhui: string = aujourdhuiISO()): boolean {
   return date <= aujourdhui;
 }
+
+/** Shifts dont le star ne fait plus partie de la section du poste, par exemple après un retrait. */
+export function shiftsSansSection<T extends { star_id: string; sectionId: string }>(
+  shifts: T[],
+  liens: { star_id: string; section_id: string }[],
+): T[] {
+  const membres = new Set(liens.map((l) => `${l.star_id}_${l.section_id}`));
+  return shifts.filter((s) => !membres.has(`${s.star_id}_${s.sectionId}`));
+}

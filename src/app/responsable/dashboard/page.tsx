@@ -7,6 +7,7 @@ import { getAcces } from "@/lib/auth";
 import {
   getConflitsDispo,
   getShiftsAConfirmer,
+  getShiftsAReattribuer,
   getShiftsDuJour,
 } from "@/lib/data/dashboard";
 import { getComptesEnAttente } from "@/lib/data/validations";
@@ -22,12 +23,14 @@ export default async function DashboardPage() {
   let shifts: Awaited<ReturnType<typeof getShiftsDuJour>> | null = null;
   let conflits: Awaited<ReturnType<typeof getConflitsDispo>> = [];
   let aConfirmer: Awaited<ReturnType<typeof getShiftsAConfirmer>> = [];
+  let aReattribuer: Awaited<ReturnType<typeof getShiftsAReattribuer>> = [];
   let nbEnAttente = 0;
   try {
-    [shifts, conflits, aConfirmer, nbEnAttente] = await Promise.all([
+    [shifts, conflits, aConfirmer, aReattribuer, nbEnAttente] = await Promise.all([
       getShiftsDuJour(departementId, aujourdhuiISO()),
       getConflitsDispo(departementId),
       getShiftsAConfirmer(departementId),
+      getShiftsAReattribuer(departementId),
       getComptesEnAttente(departementId).then((c) => c.length),
     ]);
   } catch (e) {
@@ -80,6 +83,7 @@ export default async function DashboardPage() {
         <AlertesPanel
           conflits={conflits}
           aConfirmer={aConfirmer}
+          aReattribuer={aReattribuer}
           nbEnAttente={nbEnAttente}
         />
       </div>

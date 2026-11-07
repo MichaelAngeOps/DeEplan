@@ -8,6 +8,7 @@ import { formatJour } from "@/lib/dates";
 import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getFicheStar } from "@/lib/data/annuaire";
+import { getShiftsAVenirDuStar, type ShiftAVenir } from "@/lib/data/dashboard";
 import { getFormulairesDuStar, type FormulaireDuStar } from "@/lib/data/formulaires";
 import { statutAffiche } from "@/lib/planning-shared";
 
@@ -37,6 +38,14 @@ export default async function FicheStarPage({
     // Message affiché dans la carte.
   }
 
+  let shiftsAVenir: ShiftAVenir[] | null = null;
+  try {
+    shiftsAVenir = await getShiftsAVenirDuStar(acces.departementId, id);
+  } catch (e) {
+    journaliserErreur("responsable/stars/[id]", e);
+    // Avertissement affiché dans la fenêtre de retrait.
+  }
+
   return (
     <>
       <Link
@@ -59,7 +68,10 @@ export default async function FicheStarPage({
             {fiche.statut === "valide" ? "Actif dans ce département" : "Retiré de ce département"}
           </p>
         </div>
-        <FicheStarActions starId={fiche.id} actif={fiche.statut === "valide"} />
+        <FicheStarActions
+          starId={fiche.id}
+          actif={fiche.statut === "valide"}
+          shiftsAVenir={shiftsAVenir} />
       </div>
 
       <div className="mt-7 grid gap-5 md:grid-cols-2">

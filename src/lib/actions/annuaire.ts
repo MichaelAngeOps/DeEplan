@@ -51,6 +51,12 @@ export async function definirActivationStar(
       `Vous avez été réintégré dans « ${dept?.nom ?? "le département"} ».`,
     );
   } else {
+    // À prévenir d'abord : la RLS n'autorise un responsable à notifier que les stars de ses sections.
+    await notifier(
+      starId,
+      "shift_retire",
+      `Vous avez été retiré du département « ${dept?.nom ?? ""} ».`,
+    );
     // Retire le star des sections de ce département.
     const { data: secs } = await supabase
       .from("sections")
@@ -64,11 +70,6 @@ export async function definirActivationStar(
         .eq("star_id", starId)
         .in("section_id", secIds);
     }
-    await notifier(
-      starId,
-      "shift_retire",
-      `Vous avez été retiré du département « ${dept?.nom ?? ""} ».`,
-    );
   }
 
   revalidatePath("/responsable/stars");

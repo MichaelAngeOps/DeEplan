@@ -12,6 +12,7 @@ import {
   Megaphone,
   PartyPopper,
   Pencil,
+  TriangleAlert,
 } from "lucide-react";
 import { Button, EmptyState } from "@/components/ui";
 import { formatInstant } from "@/lib/dates";
@@ -21,6 +22,7 @@ import {
   marquerNotificationsLues,
 } from "@/lib/actions/notifications";
 import type { NotificationItem } from "@/lib/data/notifications";
+import type { EspaceNotifications } from "@/lib/notifications-shared";
 
 const ICONE: Record<string, ReactNode> = {
   compte_valide: <PartyPopper size={15} className="text-accent" />,
@@ -30,6 +32,7 @@ const ICONE: Record<string, ReactNode> = {
   annonce: <Megaphone size={15} className="text-accent" />,
   departement_cree: <Building2 size={15} className="text-accent" />,
   formulaire: <ClipboardList size={15} className="text-accent" />,
+  conflit_dispo: <TriangleAlert size={15} className="text-danger" />,
 };
 
 function dateLisible(iso: string): string {
@@ -44,8 +47,10 @@ function dateLisible(iso: string): string {
 
 export function NotificationsClient({
   notifications,
+  espace = "star",
 }: {
   notifications: NotificationItem[];
+  espace?: EspaceNotifications;
 }) {
   const router = useRouter();
   const [enCours, setEnCours] = useState(false);
@@ -54,7 +59,7 @@ export function NotificationsClient({
 
   async function toutLire() {
     setEnCours(true);
-    await marquerNotificationsLues();
+    await marquerNotificationsLues(espace);
     setEnCours(false);
   }
 

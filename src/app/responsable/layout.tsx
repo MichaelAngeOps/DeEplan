@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { ResponsableShell } from "@/components/layout";
 import { ProfilFooter } from "@/components/layout/ProfilFooter";
-import { getAcces, getUtilisateur, routePardefaut } from "@/lib/auth";
+import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
+import { getAcces, getUser, getUtilisateur, routePardefaut } from "@/lib/auth";
+import { getNbNotificationsNonLues } from "@/lib/data/notifications";
 
 export default async function ResponsableLayout({
   children,
@@ -15,6 +17,8 @@ export default async function ResponsableLayout({
   const u = await getUtilisateur();
   const nom = u ? `${u.prenom} ${u.nom}`.trim() : "Responsable";
   const cumuleStar = acces.star?.statut === "valide";
+  const user = await getUser();
+  const nbNonLues = user ? await getNbNotificationsNonLues(user.id, "responsable") : 0;
 
   return (
     <ResponsableShell
@@ -28,7 +32,9 @@ export default async function ResponsableLayout({
           }
         />
       }
+      badges={{ "/responsable/notifications": nbNonLues }}
     >
+      {user && <RealtimeNotifications userId={user.id} />}
       {children}
     </ResponsableShell>
   );

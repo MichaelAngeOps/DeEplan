@@ -5,6 +5,8 @@ export interface ResponsableShellProps {
   user: SidebarUser;
   /** Contenu injecté sous la sidebar (liens démo, déconnexion). */
   sidebarFooter?: React.ReactNode;
+  /** Pastilles de compteur par href. */
+  badges?: Record<string, number>;
   children: React.ReactNode;
 }
 
@@ -12,6 +14,7 @@ export interface ResponsableShellProps {
 export function ResponsableShell({
   user,
   sidebarFooter,
+  badges,
   children,
 }: ResponsableShellProps) {
   return (
@@ -22,6 +25,7 @@ export function ResponsableShell({
         user={user}
         width={248}
         footerExtra={sidebarFooter}
+        badges={badges}
         className="sticky top-0 h-screen"
       />
       <main className="relative min-w-0 flex-1 px-5 pb-20 pt-9 lg:px-11">

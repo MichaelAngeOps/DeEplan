@@ -3,6 +3,7 @@ import {
   compterDimanches,
   confirmationDimancheRequise,
   idsCandidats,
+  shiftsSansSection,
   statutAffiche,
   statutDeclarable,
 } from "@/lib/planning-shared";
@@ -106,5 +107,21 @@ describe("statutDeclarable", () => {
     expect(statutDeclarable("2026-11-11", "2026-11-10")).toBe(false);
     expect(statutDeclarable("2026-11-10", "2026-11-10")).toBe(true);
     expect(statutDeclarable("2026-11-09", "2026-11-10")).toBe(true);
+  });
+});
+
+describe("shiftsSansSection", () => {
+  const shift = (star_id: string, sectionId: string) => ({ star_id, sectionId, date: "2026-12-01" });
+  const liens = [
+    { star_id: "a", section_id: "s1" },
+    { star_id: "b", section_id: "s2" },
+  ];
+
+  it("garde un star retiré de la section et ignore les membres", () => {
+    expect(shiftsSansSection([shift("a", "s1"), shift("c", "s1")], liens)).toEqual([shift("c", "s1")]);
+  });
+
+  it("signale un star présent dans une autre section seulement", () => {
+    expect(shiftsSansSection([shift("b", "s1")], liens)).toEqual([shift("b", "s1")]);
   });
 });

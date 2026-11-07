@@ -2,6 +2,7 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { aujourdhuiISO } from "@/lib/dates";
+import { shiftsSansSection } from "@/lib/planning-shared";
 import type { StatutShift } from "@/types/domain";
 
 export interface ShiftDuJour {
@@ -144,5 +145,64 @@ export const getShiftsAConfirmer = cache(
         date: r.date,
       };
     });
+  },
+);
+
+export interface ShiftAVenir {
+  id: string;
+  starNom: string;
+  posteNom: string;
+  date: string;
+}
+
+async function lireShiftsAVenir(departementId: string, starId?: string) {
+  const supabase = await createClient();
+  let requete = supabase
+    .from("plannings")
+    .select(
+      "id, date, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, section_id, sections!inner ( departement_id ) )",
+    )
+    .gte("date", aujourdhuiISO())
+    .eq("postes.sections.departement_id", departementId)
+    .order("date", { ascending: true });
+  if (starId) requete = requete.eq("star_id", starId);
+
+  const { data, error } = await requete;
+  if (error) throw new Error("Chargement des shifts à venir impossible.");
+
+  return (data ?? []).map((r) => {
+    const u = r.utilisateurs as { prenom: string; nom: string } | null;
+    const po = r.postes as unknown as { nom: string; section_id: string };
+    return {
+      id: r.id,
+      star_id: r.star_id,
+      sectionId: po.section_id,
+      starNom: u ? `${u.prenom} ${u.nom}`.trim() : "Star",
+      posteNom: po.nom,
+      date: r.date,
+    };
+  });
+}
+
+/** Shifts à venir d'un star dans ce département : annoncés avant de le retirer. */
+export const getShiftsAVenirDuStar = cache(
+  async (departementId: string, starId: string): Promise<ShiftAVenir[]> =>
+    lireShiftsAVenir(departementId, starId),
+);
+
+/** Shifts à venir d'un star qui n'est plus dans la section : le responsable décide quoi en faire. */
+export const getShiftsAReattribuer = cache(
+  async (departementId: string): Promise<ShiftAVenir[]> => {
+    const shifts = await lireShiftsAVenir(departementId);
+    if (shifts.length === 0) return [];
+
+    const supabase = await createClient();
+    const { data: liens, error } = await supabase
+      .from("star_sections")
+      .select("star_id, section_id")
+      .in("star_id", [...new Set(shifts.map((s) => s.star_id))]);
+    if (error) throw new Error("Chargement des sections impossible.");
+
+    return shiftsSansSection(shifts, liens ?? []);
   },
 );

@@ -1,6 +1,7 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { filtrerParEspace, type EspaceNotifications } from "@/lib/notifications-shared";
 import type { TypeNotification } from "@/lib/notify";
 
 export interface NotificationItem {
@@ -13,14 +14,17 @@ export interface NotificationItem {
   lien: string | null;
 }
 
-/** Notifications de l'utilisateur, les plus récentes d'abord. RLS : les siennes. */
+/** Un compte peut cumuler les rôles : chaque espace n'affiche que ses notifications. */
 export const getNotifications = cache(
-  async (userId: string): Promise<NotificationItem[]> => {
+  async (userId: string, espace: EspaceNotifications = "star"): Promise<NotificationItem[]> => {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("id, type, contenu, lu, date_creation, lien")
-      .eq("utilisateur_id", userId)
+    const { data, error } = await filtrerParEspace(
+      supabase
+        .from("notifications")
+        .select("id, type, contenu, lu, date_creation, lien")
+        .eq("utilisateur_id", userId),
+      espace,
+    )
       .order("date_creation", { ascending: false })
       .limit(50);
 
@@ -39,13 +43,16 @@ export const getNotifications = cache(
 
 /** Nombre de notifications non lues (pour la pastille de navigation). */
 export const getNbNotificationsNonLues = cache(
-  async (userId: string): Promise<number> => {
+  async (userId: string, espace: EspaceNotifications = "star"): Promise<number> => {
     const supabase = await createClient();
-    const { count } = await supabase
-      .from("notifications")
-      .select("*", { count: "exact", head: true })
-      .eq("utilisateur_id", userId)
-      .eq("lu", false);
+    const { count } = await filtrerParEspace(
+      supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("utilisateur_id", userId)
+        .eq("lu", false),
+      espace,
+    );
     return count ?? 0;
   },
 );
