@@ -1,5 +1,6 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { cache } from "react";
+import { lireTout } from "@/lib/supabase/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { aujourdhuiISO } from "@/lib/dates";
 import { shiftsSansSection } from "@/lib/planning-shared";
@@ -73,29 +74,34 @@ export const getConflitsDispo = cache(
     const supabase = await createClient();
     const today = aujourdhuiISO();
 
-    const { data: plannings } = await supabase
-      .from("plannings")
-      .select(
-        "id, date, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departement_id ) )",
-      )
-      .gte("date", today)
-      .eq("postes.sections.departement_id", departementId);
+    const plannings = await lireTout((de, a) =>
+      supabase
+        .from("plannings")
+        .select(
+          "id, date, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departement_id ) )",
+        )
+        .gte("date", today)
+        .eq("postes.sections.departement_id", departementId)
+        .order("id")
+        .range(de, a),
+    );
 
-    if (!plannings || plannings.length === 0) return [];
+    if (plannings.length === 0) return [];
 
     const starIds = [...new Set(plannings.map((p) => p.star_id))];
-    const dates = [...new Set(plannings.map((p) => p.date))];
 
-    const { data: indispo } = await supabase
-      .from("disponibilites")
-      .select("star_id, date")
-      .eq("statut", "indisponible")
-      .in("star_id", starIds)
-      .in("date", dates);
-
-    const conflit = new Set(
-      (indispo ?? []).map((d) => `${d.star_id}_${d.date}`),
+    const indispo = await lireTout((de, a) =>
+      supabase
+        .from("disponibilites")
+        .select("star_id, date")
+        .eq("statut", "indisponible")
+        .in("star_id", starIds)
+        .gte("date", today)
+        .order("id")
+        .range(de, a),
     );
+
+    const conflit = new Set(indispo.map((d) => `${d.star_id}_${d.date}`));
 
     return plannings
       .filter((p) => conflit.has(`${p.star_id}_${p.date}`))
@@ -124,18 +130,22 @@ export interface ShiftAConfirmer {
 export const getShiftsAConfirmer = cache(
   async (departementId: string): Promise<ShiftAConfirmer[]> => {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("plannings")
-      .select(
-        "id, date, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departement_id ) )",
-      )
-      .eq("statut", "a_confirmer")
-      .eq("postes.sections.departement_id", departementId)
-      .order("date", { ascending: true });
+    const lignes = await lireTout((de, a) =>
+      supabase
+        .from("plannings")
+        .select(
+          "id, date, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, sections!inner ( departement_id ) )",
+        )
+        .eq("statut", "a_confirmer")
+        .eq("postes.sections.departement_id", departementId)
+        .order("date", { ascending: true })
+        .order("id")
+        .range(de, a),
+    ).catch(() => {
+      throw new Error("Chargement des shifts à confirmer impossible.");
+    });
 
-    if (error) throw new Error("Chargement des shifts à confirmer impossible.");
-
-    return (data ?? []).map((r) => {
+    return lignes.map((r) => {
       const u = r.utilisateurs as { prenom: string; nom: string } | null;
       const po = r.postes as unknown as { nom: string };
       return {
@@ -157,20 +167,23 @@ export interface ShiftAVenir {
 
 async function lireShiftsAVenir(departementId: string, starId?: string) {
   const supabase = await createClient();
-  let requete = supabase
-    .from("plannings")
-    .select(
-      "id, date, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, section_id, sections!inner ( departement_id ) )",
-    )
-    .gte("date", aujourdhuiISO())
-    .eq("postes.sections.departement_id", departementId)
-    .order("date", { ascending: true });
-  if (starId) requete = requete.eq("star_id", starId);
+  const lignes = await lireTout((de, a) => {
+    const requete = supabase
+      .from("plannings")
+      .select(
+        "id, date, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( nom, section_id, sections!inner ( departement_id ) )",
+      )
+      .gte("date", aujourdhuiISO())
+      .eq("postes.sections.departement_id", departementId);
+    return (starId ? requete.eq("star_id", starId) : requete)
+      .order("date", { ascending: true })
+      .order("id")
+      .range(de, a);
+  }).catch(() => {
+    throw new Error("Chargement des shifts à venir impossible.");
+  });
 
-  const { data, error } = await requete;
-  if (error) throw new Error("Chargement des shifts à venir impossible.");
-
-  return (data ?? []).map((r) => {
+  return lignes.map((r) => {
     const u = r.utilisateurs as { prenom: string; nom: string } | null;
     const po = r.postes as unknown as { nom: string; section_id: string };
     return {
@@ -197,12 +210,19 @@ export const getShiftsAReattribuer = cache(
     if (shifts.length === 0) return [];
 
     const supabase = await createClient();
-    const { data: liens, error } = await supabase
-      .from("star_sections")
-      .select("star_id, section_id")
-      .in("star_id", [...new Set(shifts.map((s) => s.star_id))]);
-    if (error) throw new Error("Chargement des sections impossible.");
+    const starIds = [...new Set(shifts.map((s) => s.star_id))];
+    const liens = await lireTout((de, a) =>
+      supabase
+        .from("star_sections")
+        .select("star_id, section_id")
+        .in("star_id", starIds)
+        .order("star_id")
+        .order("section_id")
+        .range(de, a),
+    ).catch(() => {
+      throw new Error("Chargement des sections impossible.");
+    });
 
-    return shiftsSansSection(shifts, liens ?? []);
+    return shiftsSansSection(shifts, liens);
   },
 );

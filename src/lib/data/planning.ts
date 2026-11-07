@@ -1,5 +1,6 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { cache } from "react";
+import { lireTout } from "@/lib/supabase/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { getStructure } from "@/lib/data/structure";
 import { cleCase, type PlanningMois, type ShiftCase } from "@/lib/planning-shared";
@@ -23,18 +24,24 @@ export const getPlanningMois = cache(
 
     const sections = await getStructure(departementId);
 
-    const { data, error } = await supabase
-      .from("plannings")
-      .select(
-        "id, poste_id, date, statut, heure_debut, heure_fin, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom )",
-      )
-      .gte("date", debut)
-      .lt("date", fin);
-
-    if (error) throw new Error("Chargement du planning impossible.");
+    // Filtre par département : un compte aux deux rôles lit aussi ses propres shifts de star.
+    const shifts = await lireTout((de, a) =>
+      supabase
+        .from("plannings")
+        .select(
+          "id, poste_id, date, statut, heure_debut, heure_fin, star_id, utilisateurs!plannings_star_id_fkey ( prenom, nom ), postes!inner ( sections!inner ( departement_id ) )",
+        )
+        .gte("date", debut)
+        .lt("date", fin)
+        .eq("postes.sections.departement_id", departementId)
+        .order("id")
+        .range(de, a),
+    ).catch(() => {
+      throw new Error("Chargement du planning impossible.");
+    });
 
     const cases: Record<string, ShiftCase> = {};
-    for (const r of data ?? []) {
+    for (const r of shifts) {
       const u = r.utilisateurs as { prenom: string; nom: string } | null;
       cases[cleCase(r.poste_id, r.date)] = {
         id: r.id,
@@ -50,19 +57,22 @@ export const getPlanningMois = cache(
     // Conflits dispo/planning : star déclaré indisponible un jour où il est
     // planifié (prompt §8). `plannings` × `disponibilites` sans FK commune →
     // jointure applicative sur `(star_id, date)`.
-    const shifts = data ?? [];
     if (shifts.length > 0) {
       const starIds = [...new Set(shifts.map((r) => r.star_id))];
       const dates = [...new Set(shifts.map((r) => r.date))];
-      const { data: indispo } = await supabase
-        .from("disponibilites")
-        .select("star_id, date")
-        .eq("statut", "indisponible")
-        .in("star_id", starIds)
-        .in("date", dates);
-      const enConflit = new Set(
-        (indispo ?? []).map((d) => `${d.star_id}_${d.date}`),
-      );
+      const indispo = await lireTout((de, a) =>
+        supabase
+          .from("disponibilites")
+          .select("star_id, date")
+          .eq("statut", "indisponible")
+          .in("star_id", starIds)
+          .in("date", dates)
+          .order("id")
+          .range(de, a),
+      ).catch(() => {
+        throw new Error("Chargement des conflits impossible.");
+      });
+      const enConflit = new Set(indispo.map((d) => `${d.star_id}_${d.date}`));
       for (const r of shifts) {
         if (enConflit.has(`${r.star_id}_${r.date}`)) {
           const c = cases[cleCase(r.poste_id, r.date)];

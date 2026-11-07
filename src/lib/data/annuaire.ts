@@ -1,5 +1,6 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { cache } from "react";
+import { lireTout } from "@/lib/supabase/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { aujourdhuiISO, estDimanche, iso, moisCourant, moisDecale } from "@/lib/dates";
 import type { StatutShift } from "@/types/domain";
@@ -52,13 +53,17 @@ export const getAnnuaire = cache(
             .in("section_id", secIds)
             .in("star_id", starIds)
         : Promise.resolve({ data: [] as { star_id: string; section_id: string }[] }),
-      supabase
-        .from("plannings")
-        .select("star_id, date, statut")
-        .in("star_id", starIds)
-        .neq("statut", "na_pas_servi")
-        .gte("date", debut)
-        .lt("date", fin),
+      lireTout((de, a) =>
+        supabase
+          .from("plannings")
+          .select("star_id, date, statut")
+          .in("star_id", starIds)
+          .neq("statut", "na_pas_servi")
+          .gte("date", debut)
+          .lt("date", fin)
+          .order("id")
+          .range(de, a),
+      ),
     ]);
     const liens = liensRes.data ?? [];
 
@@ -71,7 +76,7 @@ export const getAnnuaire = cache(
       sectionsParStar.set(l.star_id, arr);
     }
     const dimanchesParStar = new Map<string, number>();
-    for (const p of plannings.data ?? []) {
+    for (const p of plannings) {
       if (!estDimanche(p.date)) continue;
       dimanchesParStar.set(p.star_id, (dimanchesParStar.get(p.star_id) ?? 0) + 1);
     }
