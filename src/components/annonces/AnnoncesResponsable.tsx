@@ -9,6 +9,7 @@ import {
   modifierAnnonce,
   supprimerAnnonce,
 } from "@/lib/actions/annonces";
+import { formatInstant } from "@/lib/dates";
 import type { Annonce } from "@/lib/data/annonces";
 
 type Modale =
@@ -18,7 +19,7 @@ type Modale =
   | null;
 
 function dateFr(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", {
+  return formatInstant(iso, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

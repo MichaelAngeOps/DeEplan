@@ -3,7 +3,7 @@ import { CalendrierStar } from "@/components/calendrier/CalendrierStar";
 import { journaliserErreur } from "@/lib/journal";
 import { getUser } from "@/lib/auth";
 import { getShiftsStar } from "@/lib/data/calendrier-star";
-import { iso, moisDecale } from "@/lib/dates";
+import { iso, moisCourant, moisDecale } from "@/lib/dates";
 
 export const metadata = { title: "Mon calendrier — DeEplan" };
 
@@ -15,8 +15,7 @@ function parseMois(v: string | undefined): { annee: number; mois: number } {
     if (mois >= 1 && mois <= 12 && annee >= 2000 && annee <= 2100)
       return { annee, mois };
   }
-  const now = new Date();
-  return { annee: now.getFullYear(), mois: now.getMonth() + 1 };
+  return moisCourant();
 }
 
 export default async function CalendrierPage({

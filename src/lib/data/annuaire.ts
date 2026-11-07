@@ -1,7 +1,7 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { aujourdhuiISO, estDimanche, iso, moisDecale } from "@/lib/dates";
+import { aujourdhuiISO, estDimanche, iso, moisCourant, moisDecale } from "@/lib/dates";
 import type { StatutShift } from "@/types/domain";
 
 export interface StarAnnuaire {
@@ -15,11 +15,8 @@ export interface StarAnnuaire {
 }
 
 function bornesMoisCourant(): { debut: string; fin: string } {
-  const now = new Date();
-  return {
-    debut: iso(now.getFullYear(), now.getMonth() + 1, 1),
-    fin: moisDecale(now.getFullYear(), now.getMonth() + 1, 1),
-  };
+  const { annee, mois } = moisCourant();
+  return { debut: iso(annee, mois, 1), fin: moisDecale(annee, mois, 1) };
 }
 
 /** Stars du département : demandes `valide` (actifs) + `refuse` (désactivés). */

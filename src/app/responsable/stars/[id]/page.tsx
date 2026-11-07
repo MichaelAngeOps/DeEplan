@@ -4,17 +4,14 @@ import { ChevronLeft } from "lucide-react";
 import { Avatar, Card, StatusBadge } from "@/components/ui";
 import { FicheStarActions } from "@/components/annuaire/FicheStarActions";
 import { FormulairesFicheStar } from "@/components/formulaires/FormulairesFicheStar";
+import { formatJour } from "@/lib/dates";
 import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getFicheStar } from "@/lib/data/annuaire";
 import { getFormulairesDuStar, type FormulaireDuStar } from "@/lib/data/formulaires";
 
 function dateFr(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", {
-    weekday: "short",
-    day: "2-digit",
-    month: "2-digit",
-  });
+  return formatJour(iso, { weekday: "short", day: "2-digit", month: "2-digit" });
 }
 
 export default async function FicheStarPage({

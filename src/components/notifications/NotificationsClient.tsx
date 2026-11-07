@@ -14,6 +14,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { Button, EmptyState } from "@/components/ui";
+import { formatInstant } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import {
   marquerNotificationLue,
@@ -32,7 +33,7 @@ const ICONE: Record<string, ReactNode> = {
 };
 
 function dateLisible(iso: string): string {
-  return new Date(iso).toLocaleString("fr-FR", {
+  return formatInstant(iso, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

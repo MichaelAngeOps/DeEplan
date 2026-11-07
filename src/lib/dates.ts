@@ -5,6 +5,9 @@ const MOIS_FR = [
   "juillet", "août", "septembre", "octobre", "novembre", "décembre",
 ];
 
+/** Fuseau de référence de l'application. */
+export const FUSEAU = "America/Toronto";
+
 /** Jours de semaine, lundi en tête (comme la maquette). */
 export const JOURS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -46,10 +49,42 @@ export function libelleMois(annee: number, mois: number): string {
   return `${MOIS_FR[mois - 1]} ${annee}`;
 }
 
-/** Date du jour en ISO, dans le fuseau local de l'exécution. */
-export function aujourdhuiISO(): string {
-  const d = new Date();
-  return iso(d.getFullYear(), d.getMonth() + 1, d.getDate());
+/** Date du jour à Ottawa-Gatineau, identique sur le serveur et sur tout appareil. */
+export function aujourdhuiISO(maintenant: Date = new Date()): string {
+  const parties = new Intl.DateTimeFormat("en-CA", {
+    timeZone: FUSEAU,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(maintenant);
+  const valeur = (type: Intl.DateTimeFormatPartTypes) =>
+    parties.find((p) => p.type === type)?.value ?? "";
+  return `${valeur("year")}-${valeur("month")}-${valeur("day")}`;
+}
+
+/** Mois en cours à Ottawa-Gatineau. */
+export function moisCourant(maintenant: Date = new Date()): { annee: number; mois: number } {
+  const [annee, mois] = aujourdhuiISO(maintenant).split("-").map(Number);
+  return { annee, mois };
+}
+
+/**
+ * Affiche un jour du calendrier (`AAAA-MM-JJ`). Ce jour ne change pas selon le fuseau :
+ * `new Date("2026-11-20")` vaut minuit UTC, soit la veille au soir à Ottawa.
+ */
+export function formatJour(dateISO: string, options: Intl.DateTimeFormatOptions): string {
+  return new Date(`${dateISO}T12:00:00Z`).toLocaleDateString("fr-FR", {
+    ...options,
+    timeZone: "UTC",
+  });
+}
+
+/** Affiche un instant précis (date de création, d'envoi…) à l'heure d'Ottawa-Gatineau. */
+export function formatInstant(
+  instant: string | Date,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  return new Date(instant).toLocaleString("fr-FR", { ...options, timeZone: FUSEAU });
 }
 
 /** `"2026-08-14"` → `"14/08"`. */

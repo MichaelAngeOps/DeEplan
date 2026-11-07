@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { Button, EmptyState } from "@/components/ui";
+import { formatInstant } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { refuserCompte, validerCompte } from "@/lib/actions/validations";
 import type { CompteEnAttente } from "@/lib/data/validations";
@@ -93,7 +94,11 @@ function CompteCard({
     }
   }
 
-  const dateFr = new Date(compte.dateInscription).toLocaleDateString("fr-FR");
+  const dateFr = formatInstant(compte.dateInscription, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <div className="rounded-lg border border-hairline bg-canvas p-5">

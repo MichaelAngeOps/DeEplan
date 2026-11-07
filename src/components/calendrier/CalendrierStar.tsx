@@ -5,15 +5,7 @@ import { useRouter } from "next/navigation";
 import { Legend, Modal, MonthNavigator, StatusBadge } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { ShiftStar, ShiftsStarMap } from "@/lib/data/calendrier-star";
-import {
-  JOURS_FR,
-  decalagePremierJour,
-  iso,
-  joursDansMois,
-  jourSemaine,
-  libelleMois,
-  moisDecale,
-} from "@/lib/dates";
+import { decalagePremierJour, formatJour, iso, JOURS_FR, joursDansMois, jourSemaine, libelleMois, moisDecale } from "@/lib/dates";
 import type { StatutShift } from "@/types/domain";
 
 const CHIP: Record<StatutShift, string> = {
@@ -138,7 +130,7 @@ export function CalendrierStar({
           open
           onClose={() => setJourDetail(null)}
           title={(shifts[jourDetail]?.length ?? 0) > 1 ? "Détail des shifts" : "Détail du shift"}
-          subtitle={new Date(jourDetail).toLocaleDateString("fr-FR", {
+          subtitle={formatJour(jourDetail, {
             weekday: "long",
             day: "numeric",
             month: "long",

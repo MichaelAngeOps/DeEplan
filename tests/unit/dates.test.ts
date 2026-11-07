@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  aujourdhuiISO,
   dateCourteFr,
   decalagePremierJour,
   estDimanche,
+  formatInstant,
+  formatJour,
   iso,
   joursDansMois,
   libelleMois,
+  moisCourant,
   moisDecale,
   ym,
 } from "@/lib/dates";
@@ -44,5 +48,52 @@ describe("dates", () => {
   it("affiche les dates en français", () => {
     expect(libelleMois(2026, 8)).toBe("août 2026");
     expect(dateCourteFr("2026-08-14")).toBe("14/08");
+  });
+});
+
+describe("fuseau d'Ottawa-Gatineau", () => {
+  const jour = (instant: string) => aujourdhuiISO(new Date(instant));
+
+  it("ne passe pas au lendemain en soirée, quand UTC a déjà changé de jour", () => {
+    expect(jour("2026-11-07T04:42:00Z")).toBe("2026-11-06");
+    expect(jour("2026-11-07T00:30:00Z")).toBe("2026-11-06");
+  });
+
+  it("change de jour à minuit, heure d'hiver", () => {
+    expect(jour("2026-11-07T04:59:00Z")).toBe("2026-11-06");
+    expect(jour("2026-11-07T05:00:00Z")).toBe("2026-11-07");
+  });
+
+  it("change de jour à minuit, heure d'été", () => {
+    expect(jour("2026-07-15T03:59:00Z")).toBe("2026-07-14");
+    expect(jour("2026-07-15T04:00:00Z")).toBe("2026-07-15");
+  });
+
+  it("reste juste les jours de changement d'heure", () => {
+    expect(jour("2026-03-08T04:59:00Z")).toBe("2026-03-07");
+    expect(jour("2026-03-08T05:00:00Z")).toBe("2026-03-08");
+    expect(jour("2026-03-09T03:59:00Z")).toBe("2026-03-08");
+    expect(jour("2026-11-01T03:59:00Z")).toBe("2026-10-31");
+    expect(jour("2026-11-01T04:00:00Z")).toBe("2026-11-01");
+    expect(jour("2026-11-02T04:59:00Z")).toBe("2026-11-01");
+    expect(jour("2026-11-02T05:00:00Z")).toBe("2026-11-02");
+  });
+
+  it("donne le bon mois au changement de mois et d'année", () => {
+    expect(moisCourant(new Date("2026-12-01T04:30:00Z"))).toEqual({ annee: 2026, mois: 11 });
+    expect(moisCourant(new Date("2027-01-01T04:59:00Z"))).toEqual({ annee: 2026, mois: 12 });
+    expect(moisCourant(new Date("2027-01-01T05:00:00Z"))).toEqual({ annee: 2027, mois: 1 });
+  });
+
+  it("affiche un jour du calendrier sans le décaler", () => {
+    const option = { weekday: "long", day: "numeric", month: "long" } as const;
+    expect(formatJour("2026-11-20", option)).toBe("vendredi 20 novembre");
+    expect(formatJour("2026-11-01", option)).toBe("dimanche 1 novembre");
+  });
+
+  it("affiche un instant à l'heure d'Ottawa", () => {
+    const option = { day: "2-digit", month: "2-digit", year: "numeric" } as const;
+    expect(formatInstant("2026-11-07T04:42:00Z", option)).toBe("06/11/2026");
+    expect(formatInstant(new Date("2026-11-07T05:00:00Z"), option)).toBe("07/11/2026");
   });
 });

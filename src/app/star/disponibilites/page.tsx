@@ -3,7 +3,7 @@ import { DisponibilitesClient } from "@/components/disponibilites/Disponibilites
 import { journaliserErreur } from "@/lib/journal";
 import { getUser } from "@/lib/auth";
 import { getDisponibilites, getJoursAvecShift } from "@/lib/data/disponibilites";
-import { moisDecale, premierDuMois } from "@/lib/dates";
+import { moisCourant, moisDecale, premierDuMois } from "@/lib/dates";
 
 export const metadata = { title: "Mes disponibilités — DeEplan" };
 
@@ -14,9 +14,7 @@ export default async function DisponibilitesPage() {
   const user = await getUser();
   if (!user) return null; // le layout Star gère la redirection
 
-  const now = new Date();
-  const annee = now.getFullYear();
-  const mois = now.getMonth() + 1;
+  const { annee, mois } = moisCourant();
 
   const debut = premierDuMois(annee, mois);
   const fin = moisDecale(annee, mois, NB_MOIS);

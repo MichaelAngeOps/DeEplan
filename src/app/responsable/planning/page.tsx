@@ -5,7 +5,7 @@ import { PlanningMonthNav } from "@/components/planning/PlanningMonthNav";
 import { journaliserErreur } from "@/lib/journal";
 import { getAcces } from "@/lib/auth";
 import { getPlanningMois } from "@/lib/data/planning";
-import { iso, moisDecale } from "@/lib/dates";
+import { iso, moisCourant, moisDecale } from "@/lib/dates";
 
 export const metadata = { title: "Planification — DeEplan" };
 
@@ -24,8 +24,7 @@ function parseMois(v: string | undefined): { annee: number; mois: number } {
     if (mois >= 1 && mois <= 12 && annee >= 2000 && annee <= 2100)
       return { annee, mois };
   }
-  const now = new Date();
-  return { annee: now.getFullYear(), mois: now.getMonth() + 1 };
+  return moisCourant();
 }
 
 export default async function PlanningPage({

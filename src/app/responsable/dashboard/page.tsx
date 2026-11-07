@@ -10,7 +10,7 @@ import {
   getShiftsDuJour,
 } from "@/lib/data/dashboard";
 import { getComptesEnAttente } from "@/lib/data/validations";
-import { aujourdhuiISO } from "@/lib/dates";
+import { aujourdhuiISO, formatInstant } from "@/lib/dates";
 
 export const metadata = { title: "Tableau de bord — DeEplan" };
 
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
     shifts = null;
   }
 
-  const dateLisible = new Date().toLocaleDateString("fr-FR", {
+  const dateLisible = formatInstant(new Date(), {
     weekday: "long",
     day: "numeric",
     month: "long",

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAcces, getUser } from "@/lib/auth";
+import { aujourdhuiISO } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
 const PATH = "/star/disponibilites";
@@ -14,13 +15,6 @@ export type ChangementDispo = {
 };
 
 export type ActionResultat = { ok: true } | { ok: false; erreur: string };
-
-/** Plancher d'édition : hier (UTC), pour absorber les décalages de fuseau. */
-function plancherISO(): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
 
 /**
  * Enregistre en lot les changements de disponibilité du star courant :
@@ -40,7 +34,7 @@ export async function enregistrerDisponibilites(
   if (changements.length > 100)
     return { ok: false, erreur: "Trop de modifications en une fois." };
 
-  const plancher = plancherISO();
+  const plancher = aujourdhuiISO();
   const vues = new Set<string>();
   for (const c of changements) {
     if (!ISO_RE.test(c.date)) return { ok: false, erreur: "Date invalide." };
