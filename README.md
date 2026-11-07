@@ -12,6 +12,8 @@ Deux profils d'utilisateur :
 Hiérarchie : Responsable → Département → Sections → Postes. Un Star peut appartenir
 à plusieurs sections. Une même personne peut cumuler les deux rôles sur un compte.
 
+Pour reprendre le projet : [guide de reprise](./docs/GUIDE-REPRISE.md).
+
 ## Stack
 
 | | |
@@ -40,6 +42,9 @@ Variables d'environnement (voir `.env.local.example`) :
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publishable Supabase (côté client) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Clé publique des notifications push |
+| `VAPID_PRIVATE_KEY` | Clé privée des notifications push, **secrète** |
+| `VAPID_SUBJECT` | Contact des notifications push (`mailto:…`) |
 
 ## Scripts
 
@@ -67,6 +72,7 @@ chaque push sur `main` (`.github/workflows/ci.yml`).
    *Development*) :
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 3. **Deploy**.
 4. Après le premier déploiement, mettre à jour :
    - **Supabase → Authentication → URL Configuration** : *Site URL* =
