@@ -1,7 +1,9 @@
 // Serveur uniquement (dépend de @/lib/supabase/server).
 import { journaliserErreur } from "@/lib/journal";
+import { after } from "next/server";
 import webpush from "web-push";
 import { aujourdhuiISO } from "@/lib/dates";
+import { enParallele } from "@/lib/parallele";
 import { messageConflit } from "@/lib/planning-shared";
 import { clientAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -17,7 +19,7 @@ export type TypeNotification =
   | "conflit_dispo";
 
 // --------------------------------------------------------------------------
-// Web push (best-effort, aucun échec ne remonte)
+// Web push (best-effort, aucun échec ne remonte ; envoyé après la réponse)
 // --------------------------------------------------------------------------
 
 let vapidPret = false;
@@ -42,6 +44,50 @@ const TITRE_PUSH: Partial<Record<TypeNotification, string>> = {
   conflit_dispo: "Conflit de disponibilité",
 };
 
+/** Envois simultanés au plus, pour ne pas saturer la fonction serveur ni le service de push. */
+const ENVOIS_SIMULTANES = 10;
+
+type Abonnement = { endpoint: string; p256dh: string; auth: string };
+
+/**
+ * Lance `tache` après l'envoi de la réponse : l'utilisateur n'attend pas les push. Hors requête
+ * (`after` indisponible), la tâche part tout de suite sans être attendue.
+ */
+function apresReponse(contexte: string, tache: () => Promise<void>): void {
+  const sure = () => tache().catch((e) => journaliserErreur(contexte, e));
+  try {
+    after(sure);
+  } catch {
+    void sure();
+  }
+}
+
+/** Envoie un push ; un abonnement expiré (404 ou 410) est supprimé. Ne lève jamais. */
+async function envoyerA(
+  abonnement: Abonnement,
+  payload: string,
+  supprimer: () => PromiseLike<unknown>,
+  contexte: string,
+): Promise<void> {
+  try {
+    await webpush.sendNotification(
+      { endpoint: abonnement.endpoint, keys: { p256dh: abonnement.p256dh, auth: abonnement.auth } },
+      payload,
+    );
+  } catch (e: unknown) {
+    const code = (e as { statusCode?: number }).statusCode;
+    if (code !== 404 && code !== 410) {
+      journaliserErreur(contexte, e);
+      return;
+    }
+    try {
+      await supprimer();
+    } catch (erreur) {
+      journaliserErreur(contexte, erreur);
+    }
+  }
+}
+
 async function envoyerPush(
   utilisateurIds: string[],
   type: TypeNotification,
@@ -58,35 +104,35 @@ async function envoyerPush(
     tag: type,
   });
 
+  // Le client est créé pendant la requête, tant que ses cookies sont lisibles.
+  let supabase: Awaited<ReturnType<typeof createClient>>;
   try {
-    const supabase = await createClient();
-    for (const userId of utilisateurIds) {
+    supabase = await createClient();
+  } catch (e) {
+    journaliserErreur("notify/push", e);
+    return;
+  }
+
+  apresReponse("notify/push", () =>
+    enParallele(utilisateurIds, ENVOIS_SIMULTANES, async (userId) => {
       const { data: subs, error } = await supabase.rpc("push_subscriptions_pour", {
         p_user: userId,
       });
-      if (error) journaliserErreur("notify/abonnements", error);
+      if (error) {
+        journaliserErreur("notify/abonnements", error);
+        return;
+      }
       for (const s of subs ?? []) {
         if (s.type !== "web" || !s.p256dh || !s.auth) continue;
-        try {
-          await webpush.sendNotification(
-            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-            payload,
-          );
-        } catch (e: unknown) {
-          const code = (e as { statusCode?: number }).statusCode;
-          if (code === 404 || code === 410) {
-            await supabase.rpc("supprimer_abonnement_push", {
-              p_endpoint: s.endpoint,
-            });
-          } else {
-            journaliserErreur("notify/push", e);
-          }
-        }
+        await envoyerA(
+          { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
+          payload,
+          () => supabase.rpc("supprimer_abonnement_push", { p_endpoint: s.endpoint }),
+          "notify/push",
+        );
       }
-    }
-  } catch (e) {
-    journaliserErreur("notify/push", e);
-  }
+    }),
+  );
 }
 
 // --------------------------------------------------------------------------
@@ -163,7 +209,7 @@ export async function pousserConflitsAuxResponsables(
   const admin = clientAdmin();
   if (!admin) return;
 
-  try {
+  apresReponse("notify/push-responsable", async () => {
     const { data: shifts, error } = await admin
       .from("plannings")
       .select(
@@ -174,6 +220,9 @@ export async function pousserConflitsAuxResponsables(
       .gte("date", aujourdhuiISO());
     if (error) throw error;
 
+    const envois: { abonnement: Abonnement & { id: string }; payload: string }[] = [];
+    const abonnementsDe = new Map<string, (Abonnement & { id: string })[]>();
+
     for (const shift of shifts ?? []) {
       const u = shift.utilisateurs as { prenom: string; nom: string } | null;
       const poste = shift.postes as unknown as {
@@ -182,12 +231,19 @@ export async function pousserConflitsAuxResponsables(
       };
       const responsableId = poste.sections.departements.responsable_id;
 
-      const { data: abonnements, error: erreurAbonnements } = await admin
-        .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth")
-        .eq("user_id", responsableId)
-        .eq("type", "web");
-      if (erreurAbonnements) throw erreurAbonnements;
+      let abonnements = abonnementsDe.get(responsableId);
+      if (!abonnements) {
+        const { data, error: erreurAbonnements } = await admin
+          .from("push_subscriptions")
+          .select("id, endpoint, p256dh, auth")
+          .eq("user_id", responsableId)
+          .eq("type", "web");
+        if (erreurAbonnements) throw erreurAbonnements;
+        abonnements = (data ?? []).flatMap((a) =>
+          a.p256dh && a.auth ? [{ id: a.id, endpoint: a.endpoint, p256dh: a.p256dh, auth: a.auth }] : [],
+        );
+        abonnementsDe.set(responsableId, abonnements);
+      }
 
       const payload = JSON.stringify({
         title: TITRE_PUSH.conflit_dispo,
@@ -195,25 +251,16 @@ export async function pousserConflitsAuxResponsables(
         url: "/responsable/dashboard",
         tag: "conflit_dispo",
       });
-
-      for (const a of abonnements ?? []) {
-        if (!a.p256dh || !a.auth) continue;
-        try {
-          await webpush.sendNotification(
-            { endpoint: a.endpoint, keys: { p256dh: a.p256dh, auth: a.auth } },
-            payload,
-          );
-        } catch (e: unknown) {
-          const code = (e as { statusCode?: number }).statusCode;
-          if (code === 404 || code === 410) {
-            await admin.from("push_subscriptions").delete().eq("id", a.id);
-          } else {
-            journaliserErreur("notify/push-responsable", e);
-          }
-        }
-      }
+      for (const abonnement of abonnements) envois.push({ abonnement, payload });
     }
-  } catch (e) {
-    journaliserErreur("notify/push-responsable", e);
-  }
+
+    await enParallele(envois, ENVOIS_SIMULTANES, ({ abonnement, payload }) =>
+      envoyerA(
+        abonnement,
+        payload,
+        () => admin.from("push_subscriptions").delete().eq("id", abonnement.id),
+        "notify/push-responsable",
+      ),
+    );
+  });
 }
