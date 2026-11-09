@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Legend, Modal, MonthNavigator, StatusBadge } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { ShiftStar, ShiftsStarMap } from "@/lib/data/calendrier-star";
-import { decalagePremierJour, formatJour, iso, JOURS_FR, joursDansMois, jourSemaine, libelleMois, moisDecale } from "@/lib/dates";
+import { colonneEstJourCle, decalagePremierJour, estJourCle, formatJour, INITIALES_JOURS, iso, joursDansMois, libelleMois, moisDecale } from "@/lib/dates";
 import { statutAffiche, type StatutAffiche } from "@/lib/planning-shared";
 
 const CHIP: Record<StatutAffiche, string> = {
@@ -66,10 +66,13 @@ export function CalendrierStar({
 
       <div className="mt-4 max-w-[560px]">
         <div className="mb-1.5 grid grid-cols-7 gap-1.5">
-          {JOURS_FR.map((j) => (
+          {INITIALES_JOURS.map((j, i) => (
             <div
-              key={j}
-              className="text-center text-[10.5px] font-semibold text-ink-48"
+              key={i}
+              className={cn(
+                "text-center text-[11px] font-semibold",
+                colonneEstJourCle(i) ? "text-accent" : "text-ink-48",
+              )}
             >
               {j}
             </div>
@@ -83,7 +86,7 @@ export function CalendrierStar({
             const jour = i + 1;
             const dateISO = iso(annee, mois, jour);
             const duJour = shifts[dateISO] ?? [];
-            const weekend = [0, 6].includes(jourSemaine(dateISO));
+            const jourCle = estJourCle(dateISO);
             return (
               <button
                 key={dateISO}
@@ -92,7 +95,7 @@ export function CalendrierStar({
                 onClick={() => duJour.length > 0 && setJourDetail(dateISO)}
                 className={cn(
                   "min-h-[52px] rounded-sm border border-hairline p-1.5 text-left align-top transition-colors",
-                  weekend && "bg-parchment/50",
+                  jourCle && "border-accent/40 bg-accent/[0.05]",
                   duJour.length > 0
                     ? "cursor-pointer hover:border-accent"
                     : "cursor-default",

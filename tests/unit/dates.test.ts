@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   aujourdhuiISO,
+  colonneEstJourCle,
   dateCourteFr,
+  estJourCle,
+  initialeJour,
+  INITIALES_JOURS,
   decalagePremierJour,
   estDimanche,
   formatInstant,
@@ -95,5 +99,27 @@ describe("fuseau d'Ottawa-Gatineau", () => {
     const option = { day: "2-digit", month: "2-digit", year: "numeric" } as const;
     expect(formatInstant("2026-11-07T04:42:00Z", option)).toBe("06/11/2026");
     expect(formatInstant(new Date("2026-11-07T05:00:00Z"), option)).toBe("07/11/2026");
+  });
+});
+
+describe("jours de shifts consacrés", () => {
+  it("met en évidence mercredi, vendredi, samedi et dimanche, et eux seuls", () => {
+    // Semaine du lundi 2 au dimanche 8 novembre 2026.
+    const semaine = ["02", "03", "04", "05", "06", "07", "08"].map((j) => estJourCle(`2026-11-${j}`));
+    expect(semaine).toEqual([false, false, true, false, true, true, true]);
+  });
+
+  it("donne la même réponse par colonne de calendrier, lundi en tête", () => {
+    expect(Array.from({ length: 7 }, (_, i) => colonneEstJourCle(i))).toEqual([
+      false, false, true, false, true, true, true,
+    ]);
+  });
+
+  it("écrit les initiales des jours, lundi en tête", () => {
+    expect(INITIALES_JOURS.join("")).toBe("LMMJVSD");
+    expect(initialeJour(0)).toBe("D");
+    expect(initialeJour(1)).toBe("L");
+    expect(initialeJour(3)).toBe("M");
+    expect(initialeJour(6)).toBe("S");
   });
 });

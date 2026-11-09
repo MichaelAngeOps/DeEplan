@@ -2,8 +2,10 @@
 
 import { cn } from "@/lib/cn";
 import {
-  JOURS_FR,
+  INITIALES_JOURS,
+  colonneEstJourCle,
   decalagePremierJour,
+  estJourCle,
   iso,
   joursDansMois,
 } from "@/lib/dates";
@@ -38,10 +40,13 @@ export function MoisCalendrier({
   return (
     <div>
       <div className="mb-1.5 grid grid-cols-7 gap-1.5">
-        {JOURS_FR.map((j) => (
+        {INITIALES_JOURS.map((j, i) => (
           <div
-            key={j}
-            className="text-center text-[10.5px] font-semibold text-ink-48"
+            key={i}
+            className={cn(
+              "text-center text-[11px] font-semibold",
+              colonneEstJourCle(i) ? "text-accent" : "text-ink-48",
+            )}
           >
             {j}
           </div>
@@ -84,6 +89,12 @@ export function MoisCalendrier({
               )}
             >
               <span className="text-[11.5px] font-semibold">{jour}</span>
+              {estJourCle(dateISO) && (
+                <span
+                  aria-hidden
+                  className="absolute inset-x-1.5 bottom-1 h-[3px] rounded-full bg-accent"
+                />
+              )}
               {aShift(dateISO) && (
                 <span
                   aria-hidden

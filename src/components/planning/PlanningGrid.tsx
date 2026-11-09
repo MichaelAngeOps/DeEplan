@@ -2,7 +2,7 @@
 
 import { initials } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { iso, joursDansMois, jourSemaine } from "@/lib/dates";
+import { estJourCle, initialeJour, iso, joursDansMois, jourSemaine } from "@/lib/dates";
 import {
   cleCase,
   statutAffiche,
@@ -31,14 +31,20 @@ export interface CelluleCliquee {
 interface Jour {
   jour: number;
   dateISO: string;
-  weekend: boolean;
+  initiale: string;
+  cle: boolean;
 }
 
 function joursDuMois(annee: number, mois: number): Jour[] {
   return Array.from({ length: joursDansMois(annee, mois) }, (_, i) => {
     const jour = i + 1;
-    const wd = jourSemaine(iso(annee, mois, jour));
-    return { jour, dateISO: iso(annee, mois, jour), weekend: wd === 0 || wd === 6 };
+    const dateISO = iso(annee, mois, jour);
+    return {
+      jour,
+      dateISO,
+      initiale: initialeJour(jourSemaine(dateISO)),
+      cle: estJourCle(dateISO),
+    };
   });
 }
 
@@ -78,11 +84,12 @@ export function PlanningGrid({
               <th
                 key={j.dateISO}
                 className={cn(
-                  "min-w-[34px] border-b border-hairline px-1.5 py-2.5 text-center text-[11.5px] font-semibold",
-                  j.weekend ? "bg-parchment text-ink" : "text-ink-48",
+                  "min-w-[34px] border-b border-hairline px-1.5 py-1.5 text-center font-semibold",
+                  j.cle ? "bg-accent/10 text-accent" : "text-ink-48",
                 )}
               >
-                {j.jour}
+                <span className="block text-[10px] leading-none">{j.initiale}</span>
+                <span className="mt-1 block text-[11.5px] leading-none">{j.jour}</span>
               </th>
             ))}
           </tr>
@@ -149,7 +156,7 @@ function SectionRows({
                 key={j.dateISO}
                 className={cn(
                   "border-b border-l border-hairline p-0 text-center",
-                  j.weekend && "bg-parchment/50",
+                  j.cle && "bg-accent/[0.05]",
                 )}
               >
                 <button

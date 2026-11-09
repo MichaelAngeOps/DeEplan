@@ -11,6 +11,30 @@ export const FUSEAU = "America/Toronto";
 /** Jours de semaine, lundi en tête (comme la maquette). */
 export const JOURS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
+/** Initiales des jours, lundi en tête, au-dessus des cases des calendriers. */
+export const INITIALES_JOURS = ["L", "M", "M", "J", "V", "S", "D"];
+
+/** Initiale d'un jour de semaine de `jourSemaine` (0 = dimanche). */
+export function initialeJour(jour: number): string {
+  return INITIALES_JOURS[(jour + 6) % 7];
+}
+
+/**
+ * Jours de shifts consacrés, mis en évidence dans les calendriers : mercredi, vendredi, samedi et
+ * dimanche (numérotation de `jourSemaine`). Communs à tous les départements (décision du 2026-11-08).
+ */
+export const JOURS_CLES: readonly number[] = [3, 5, 6, 0];
+
+/** Vrai si la date ISO tombe un jour de shifts consacré. */
+export function estJourCle(dateISO: string): boolean {
+  return JOURS_CLES.includes(jourSemaine(dateISO));
+}
+
+/** Vrai si la colonne `index` (0 = lundi) d'un calendrier est un jour de shifts consacré. */
+export function colonneEstJourCle(index: number): boolean {
+  return JOURS_CLES.includes((index + 1) % 7);
+}
+
 /** `2026-08` → `{ annee: 2026, mois: 8 }` (mois 1–12). */
 export function ym(annee: number, mois: number): { annee: number; mois: number } {
   const idx = (mois - 1 + 12) % 12;
